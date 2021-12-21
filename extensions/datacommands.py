@@ -1,5 +1,3 @@
-from logging import error
-from os import close
 import hikari
 import lightbulb
 from lightbulb.checks import has_guild_permissions
@@ -15,7 +13,7 @@ datacommands_plugin = lightbulb.Plugin("DataCommands")
 
 color=0x6bf414
 
-datafile="/Users/chcha/Documents/GitHub/ProjectMSS/data.json"
+datafile="data.json"
 def write_json(new_data, filename=datafile):
     with open(filename,'r+') as file:
         file_data = json.load(file)
