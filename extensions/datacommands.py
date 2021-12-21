@@ -15,9 +15,7 @@ datacommands_plugin = lightbulb.Plugin("DataCommands")
 
 color=0x6bf414
 
-
-
-datafile="/Users/chcha/OneDrive/Documents/Chandan_Coding/Python_Code/Discord Bots/ProjectMSSHikari/data.json"
+datafile="/Users/chcha/Documents/GitHub/ProjectMSS/data.json"
 def write_json(new_data, filename=datafile):
     with open(filename,'r+') as file:
         file_data = json.load(file)
@@ -76,6 +74,7 @@ async def serversetup(ctx: context.Context):
         await ctx.respond("The server command is setup!")
 
 @datacommands_plugin.command
+@lightbulb.option("ip", "The ip of the server.", required=False)
 @lightbulb.command("server", "Gets status of hotekyed server!")
 @lightbulb.implements(commands.PrefixCommand, commands.SlashCommand)
 async def server(ctx: context.Context):
