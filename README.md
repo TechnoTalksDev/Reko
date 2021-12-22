@@ -17,7 +17,7 @@ You need to add a couple things to get the bot up and running, in the state that
 }
 ```
 3. Your almost there! Add the bot to your server and make sure to give it the "applications.commands" OAuth2 scope. You can do this through the discord.dev portal. Go to you application and click OAuth2 then click on Url Generator then select "applications.commands" and copy and paste the link into a browser!
-4. Now to run the bot make sure to run main.py and not one of the other files. I have currently implemented rudimentary linux support (If the bot even runs properly on linux but fingers crossed 😝). Though I would use linux for now. You should be good! If you run into issues open a issue on github or contact me through discord!
+4. Now to run the bot make sure to run main.py and not one of the other files. I have currently implemented rudimentary linux support (If the bot even runs properly on linux but fingers crossed 😝). Though I would use windows for now. You should be good! If you run into issues open a issue on github or contact me through discord!
 ## Note
 I'm not the best Python dev but I'm trying to improve and thats one of the reasons behind this project! This is just a chill fun project for me on the side. I've got a lot of things going on in my life currently so don't expect amazing support or anything I'm just a random guy on the internet making a discord bot for fun! 
 
