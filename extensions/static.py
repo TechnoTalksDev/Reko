@@ -27,10 +27,10 @@ def latencyraw(ip):
 @lightbulb.command("help", "Lists all commands and what they do.")
 @lightbulb.implements(commands.PrefixCommand, commands.SlashCommand)
 async def help(ctx):
-    embed = hikari.Embed(title="Help & Important Info",
-                          
-                          color=color)
+    embed = hikari.Embed(title="Help & Important Info", description="Lists all the commands and their uses! If you need more assistance or have found a bug then please join the Support Server: [Join now!](https://discord.com/invite/8vNHAA36fR).",color=color)
+
     embed.set_thumbnail("https://me.technotalks.net/ProjectMSS.png")
+
     embed.add_field(name="Ping", 
 					          value=f"Send latency", 
 					          inline=False)
@@ -38,10 +38,16 @@ async def help(ctx):
 					          value=f"Sends info about the developer of this bot! Check it out if you want your own custom one!", 
 					          inline=False)
     embed.add_field(name="Status", 
-					          value=f"Gets the status of any MC Server! Make sure to put the correct ip of the server next to the command!", 
+					          value=f"Get's the status of any MC Server! Make sure to put the correct ip of the server next to the command!", 
 					          inline=False)
     embed.add_field(name="Latency", 
 					          value=f"Get's the latency to a minecraft server with a provided ip in ms from the bot's host. ", 
+					          inline=False)
+    embed.add_field(name="Server", 
+					          value=f"Get's the status of the set MC Server! This is set by the server admins and is used like a hotkey!", 
+					          inline=False)
+    embed.add_field(name="ServerSetup [*Admin Only Command*]", 
+					          value=f"This command sets the server for the above listed Server command. This command requires the Adminstrator permission!", 
 					          inline=False)
     embed.add_field(name="\u200B",
                               value=f"💻 Developed by TechnoTalks, Support Server: [Join now!](https://discord.com/invite/8vNHAA36fR), Thank you for using {ctx.bot.get_me().username}!",

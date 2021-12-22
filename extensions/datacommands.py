@@ -63,8 +63,7 @@ async def serversetup(ctx: context.Context):
     #print(sid)
     d={"serverid": sid, "mcip": ip}
     #print(d)
-    if ip=="reset":
-        
+    if ip=="reset": 
         await ctx.respond(delete_entry(sid))
     elif write_json(d)=="duplicate":
         await ctx.respond("You have already setup an ip... Run this command again with `reset` as the ip value to clear the stored ip.")
@@ -72,7 +71,6 @@ async def serversetup(ctx: context.Context):
         await ctx.respond("The server command is setup!")
 
 @datacommands_plugin.command
-@lightbulb.option("ip", "The ip of the server.", required=False)
 @lightbulb.command("server", "Gets status of hotekyed server!")
 @lightbulb.implements(commands.PrefixCommand, commands.SlashCommand)
 async def server(ctx: context.Context):
@@ -81,7 +79,7 @@ async def server(ctx: context.Context):
     #print(type(sip))
     #print(sip)
     if sip == "SETUP_ERROR":
-        await ctx.respond("This command has not been setup properly please ask the admins to run serversetup again!")
+        await ctx.respond("This command has not been setup properly please ask the admins to run /serversetup to setup this command!")
     else:
         url = "https://api.mcsrvstat.us/2/{}".format(sip)
         thing = requests.get(url)
