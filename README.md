@@ -3,7 +3,7 @@ A Minecraft Server Status checker discord bot! Still in development not near fin
 ## Licence/Terms of use
 I haven't setup a Licence yet but you are welcome to fork the project and play around with it! If you plan on publishing your forked version, please make sure to run it by me once (You can contact me on Discord, My Discord Server: https://discord.gg/8vNHAA36fR). This is to prevent people from copying the bot and posting it as their own. 
 I do wish to publish this bot in the future!
-## Setup
+## Setup NOTE: THIS IS INCOMPLETE AND MIGHT NOT CONTAIN FULL SETUP INSTRUCTIONS YET!!!
 So, you want to dabble with the code eh!
 There's a couple things you need to do before you can get all dirty with the code!
 You need to add a couple things to get the bot up and running, in the state that it is published to github the bot is missing a few things because they could contain personal data, and the bot happens to need these to function. So, here are the things you need to take of:
