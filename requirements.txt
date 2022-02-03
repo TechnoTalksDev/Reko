@@ -1,3 +1,0 @@
-hikari
-hikari-lightbulb
-uvloop; sys_platform != "win32"
