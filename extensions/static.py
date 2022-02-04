@@ -5,8 +5,7 @@ import discord
 import requests
 import json
 from mcstatus import MinecraftServer
-#guilds to process slash commands
-guilds=[846192394214965268]
+from main import guilds
 #color of bot
 color=0x6bf414
 #function to get server latency

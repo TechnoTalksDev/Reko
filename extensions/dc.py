@@ -1,29 +1,28 @@
 import discord
-from discord.commands import slash_command
-from discord.commands import Option
+from discord.commands import slash_command , Option
 from discord.ext import commands
+from discord.ext.commands import MissingPermissions
 import json
 import requests
 import motor
 import motor.motor_asyncio
+from main import guilds
 
 #mongodb setup
 cluster = motor.motor_asyncio.AsyncIOMotorClient("10.0.0.210", 27017)
 db=cluster.discord
 collection=db.mss
 
-guilds=[846192394214965268]
-
 color=0x6bf414
 
 class dc(commands.Cog):
     def __init__(self, bot):
         self.bot=bot
-        
+
     @slash_command(guild_ids=guilds, description="Setup your custom server hotkey!")
+    @commands.has_permissions(administrator=True)
     async def serversetup(self, ctx, ip: Option(str, "The ip of the server.", required=True)):
         sid=ctx.guild_id
-        #print(sid)
         findguild= await collection.find_one({"_id": sid})
         if not findguild:
             await collection.insert_one({"_id":sid, "mcip": ip})
@@ -33,7 +32,13 @@ class dc(commands.Cog):
             await ctx.respond("Previously stored IP cleared!")
         else:
             await ctx.respond("You have already setup an ip... Run this command again with `reset` as the ip value to clear the stored ip.")
-
+    @serversetup.error
+    async def serversetuperror(self, ctx, error):
+        if isinstance(error, MissingPermissions):
+            await ctx.respond(f"You are missing the required permission: **{error.missing_permissions[0].capitalize()}**, to run this command!")
+        else:
+            await ctx.respond("Something went wrong...")
+            raise error
     @slash_command(guild_ids=guilds, description="Get's status of hotkeyed server!")
     async def server(self, ctx):
         inputid=ctx.guild_id

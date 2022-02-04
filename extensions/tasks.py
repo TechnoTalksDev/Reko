@@ -3,8 +3,7 @@ import discord
 from discord.commands import slash_command
 from discord.commands import Option
 from discord.ext import commands, tasks
-
-guilds=[846192394214965268]
+from main import guilds
 
 color=0x6bf414
 
@@ -21,7 +20,7 @@ class tasksCog(commands.Cog):
         #cancel tasks on cog unload
         self.tick.cancel()
     #Looped Tasks
-    @tasks.loop(seconds=15.0)
+    @tasks.loop(seconds=30.0)
     async def tick(self):
         channel_id=923308480847282236
         channel = self.bot.get_channel(channel_id)
