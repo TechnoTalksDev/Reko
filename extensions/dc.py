@@ -64,7 +64,10 @@ class dc(commands.Cog):
                 embed.add_field(name="Player Count:", value="{}".format(data["players"]["online"]), inline=True)
                 embed.add_field(name="Version:", value="{}".format(data["version"]), inline=True)
                 await ctx.respond(embed=embed)
-
+    @server.error
+    async def servererror(self, ctx, error):
+        await ctx.respond("Something went wrong...")
+        raise error
 def setup(bot):
     print("Loading extension DataCommands...")
     bot.add_cog(dc(bot))

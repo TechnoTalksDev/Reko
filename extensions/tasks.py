@@ -26,12 +26,11 @@ class tasksCog(commands.Cog):
         channel = self.bot.get_channel(channel_id)
         tick = str(self.index)
         await channel.send("Tick: "+tick+"\n"+f"{round(self.bot.latency * 1000)}ms")
-        #print(channel)
         self.index += 1
     #Make sure to wait before bot start to begin looping tasks
     @tick.before_loop
     async def before_tick(self):
-        print('Waiting for bot start...')
+        #print('Waiting for bot start...')
         await self.bot.wait_until_ready()
 
 def setup(bot):

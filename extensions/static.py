@@ -11,7 +11,7 @@ color=0x6bf414
 #function to get server latency
 def latencyraw(ip):
     try:
-        server = MinecraftServer.lookup(ip+":25565")
+        server = MinecraftServer.lookup(ip)
         status = server.status()
         ping="{}".format(status.latency)
         return ping

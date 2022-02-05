@@ -28,10 +28,16 @@ bot.load_extension("extensions.dc")
 bot.load_extension("extensions.tasks")
 #reload extensions
 @bot.slash_command(guild_ids=guilds, description="Reloads extensions.")
+@discord.is_owner()
 async def reload(ctx):
-    await bot.reload_extension("static")
-    await bot.reload_extension("dc")
-    await bot.reload_extension("tasks")
+    bot.reload_extension("extensions.static")
+    bot.reload_extension("extensions.dc")
+    bot.reload_extension("extensions.tasks")
+    print("Done reloading!")
     await ctx.respond("Reloaded cog's and extensions.")
+@reload.error
+async def reloaderror(ctx, error):
+    await ctx.respond("Something went wrong...")
+    raise error
 #running bot
 bot.run(token)
