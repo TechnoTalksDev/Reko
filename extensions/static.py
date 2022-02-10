@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord.commands import Option
 import discord, requests, json
 from mcstatus import MinecraftServer
-from main import guilds
+#from main import guilds
 #color of bot
 color=0x6bf414
 #function to get server latency

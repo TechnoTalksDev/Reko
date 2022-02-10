@@ -3,7 +3,7 @@ from discord.commands import slash_command , Option
 from discord.ext import commands
 from discord.ext.commands import MissingPermissions
 import json, requests, motor, motor.motor_asyncio
-from main import guilds
+#from main import guilds
 
 #mongodb setup
 cluster = motor.motor_asyncio.AsyncIOMotorClient("10.0.0.210", 27017)

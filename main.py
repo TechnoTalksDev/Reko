@@ -3,11 +3,9 @@ from discord.ext import commands, tasks
 import datetime, time
 #bot client
 activity = discord.Activity(type=discord.ActivityType.watching, name="Minecraft Servers")
-bot = discord.Bot(activity=activity, debug_guilds=[846192394214965268, 923355914495475732, 866018599557791755])
+bot = discord.Bot(activity=activity)
 #setting color of bot
 color=0x6bf414
-#guilds to process slash commands this is just a placeholder to make it easier for me
-guilds=[846192394214965268, 923355914495475732, 866018599557791755]
 #getting token from token file
 with open("./secrets/token", "r") as f:
     token = f.read().strip()
@@ -31,7 +29,8 @@ async def ping(ctx):
     embed.set_author(name="Pong! 🏓")
     embed.add_field(name="Ping",value=f"`{round(bot.latency * 1000)}ms`",inline=True)
     embed.add_field(name="Uptime", value=f"`{uptime}`", inline=True)
-    embed.add_field(name="Servers", value=f"`{len(bot.guilds)}`")
+    embed.add_field(name="Servers", value=f"`{len(bot.guilds)}`", inline=True)
+    embed.add_field(name="Version", value="`0.1.2`", inline=True)
     await ctx.respond(embed=embed)
 
 @bot.event
@@ -40,6 +39,16 @@ async def on_message(message):
        channel=message.channel
        await channel.send("Please run the help command!")
        await message.add_reaction("👍")
+
+@bot.event
+async def on_guild_join(guild):
+    embed=discord.Embed(title="Thanks for inviting me!", description="Run `/help` to see all my commands and their uses!", color=0x59f406)
+    embed.set_thumbnail(url="https://me.technotalks.net/ProjectMSS.png")
+    embed.add_field(name="\u200B", value="Try `/status` to check the status of a server immediately!", inline=False)
+    embed.add_field(name="\u200B", value="Please note that this is a **BETA**! Please report any bugs (*or suggestions!*) in my server [Join Now](https://discord.com/invite/8vNHAA36fR)", inline=True)
+    embed.set_footer(text="Have fun! 🕶️")
+    await guild.text_channels[0].send(embed=embed)
+
 #reload extensions
 @bot.slash_command(description="Reloads extensions.")
 @discord.is_owner()
