@@ -1,9 +1,7 @@
 from discord.commands import slash_command
 from discord.ext import commands
 from discord.commands import Option
-import discord
-import requests
-import json
+import discord, requests, json
 from mcstatus import MinecraftServer
 from main import guilds
 #color of bot
@@ -23,44 +21,15 @@ class Static(commands.Cog):
     def __init__(self, bot):
         self.bot=bot
     #help command
-    @slash_command(guild_ids=guilds, description="Lists all the commands of the bot and their uses")
+    @slash_command(description="Lists all the commands of the bot and their uses")
     async def help(self, ctx):
-        #really weird embed formatting idk why
-        '''
-        embed = discord.Embed(title="Help & Important Info", description="Lists all the commands and their uses! If you need more assistance or have found a bug then please join the Support Server: [Join now!](https://discord.com/invite/8vNHAA36fR).",color=color)
-
-        embed.set_thumbnail(url="https://me.technotalks.net/ProjectMSS.png"),
-
-        embed.add_field(name="Ping", 
-                                value=f"Send latency", 
-                                inline=False)
-        embed.add_field(name="Developer", 
-                                value=f"Sends info about the developer of this bot! Check it out if you want your own custom one!", 
-                                inline=False)
-        embed.add_field(name="Status", 
-                                value=f"Get's the status of any MC Server! Make sure to put the correct ip of the server next to the command!", 
-                                inline=False)
-        embed.add_field(name="Latency", 
-                                value=f"Get's the latency to a minecraft server with a provided ip in ms from the bot's host. ", 
-                                inline=False)
-        embed.add_field(name="Server", 
-                                value=f"Get's the status of the set MC Server! This is set by the server admins and is used like a hotkey!", 
-                                inline=False)
-        embed.add_field(name="ServerSetup [*Admin Only Command*]", 
-                                value=f"This command sets the server for the above listed Server command. This command requires the Adminstrator permission!", 
-                                inline=False)
-        embed.add_field(name="\u200B",
-                                value=f"💻 Developed by TechnoTalks, Support Server: [Join now!](https://discord.com/invite/8vNHAA36fR), Thank you for using {self.bot.user.display_name}!",
-                                inline=False)
-        await ctx.respond(embed=embed)
-        '''
-        embed=discord.Embed(title="Help & Important Info!", description="Lists all the commands and their uses! If you need more assistance or have found a bug then please join the Support Server: [Join now!](https://discord.com/invite/8vNHAA36fR).", color=0x35d232)
+        embed=discord.Embed(title="Help & Important Info!", description="Lists all the commands and their uses! If you need more assistance, have found a bug, or have a suggestion, then please join the Support Server: [Join now!](https://discord.com/invite/8vNHAA36fR).", color=0x35d232)
         embed.set_thumbnail(url="https://me.technotalks.net/ProjectMSS.png")
-        embed.add_field(name="__Commands__", value="`Ping`: Ping of the bot to the Discord API \n`Developer`: Sends info about the developer of this bot!\n`Status`: Get's the status of any MC Server!\n`Latency`: Get's the latency to a minecraft server in ms.\n`Server`: Get's the status of the set MC Server! Set by the admins!\n`Serversetup [*Admin ONLY Command*]`: This command sets the server for the above listed Server command.", inline=True)
+        embed.add_field(name="__Commands__", value="`Ping`: Ping of the bot to the Discord API \n`Developer`: Sends info about the developer of this bot!\n`Status`: Get's the status of any MC Server!\n`Latency`: Get's the latency to a minecraft server in ms.\n`Server`: Get's the status of the set MC Server! Set by the admins!\n`Serversetup [*Admin ONLY Command*]`: This command is used to setup the guild specific features", inline=True)
         embed.add_field(name="\u200B", value=f"💻 Developed by TechnoTalks, Support Server: [Join now!](https://discord.com/invite/8vNHAA36fR), Thank you for using {self.bot.user.display_name}!", inline=False)
         await ctx.respond(embed=embed)
     #dev command self advertising go brrr
-    @slash_command(guild_ids=guilds, description="Information about the developer!")
+    @slash_command(description="Information about the developer!")
     async def dev(self, ctx):
         embed=discord.Embed(title="About the developer!", description="yea the guy who made this bot :D", color=0x00bfff)
         embed.set_author(name="TechnoTalks", url="https://me.technotalks.net/", icon_url="https://me.technotalks.net/PFP.png",)
@@ -71,7 +40,7 @@ class Static(commands.Cog):
         embed.set_footer(text="Thanks for reading!")
         await ctx.respond(embed=embed)
 
-    @slash_command(guild_ids=guilds, description= "Get the Status of any Minecraft Server.")
+    @slash_command(description= "Get the Status of any Minecraft Server.")
     async def status(self, ctx, ip: Option(str, "The ip of the server.", required=True)):
         url = "https://api.mcsrvstat.us/2/{}".format(ip)
         thing = requests.get(url)
@@ -90,7 +59,11 @@ class Static(commands.Cog):
             embed.add_field(name="Player Count:", value="{}".format(data["players"]["online"]), inline=True)
             embed.add_field(name="Version:", value="{}".format(data["version"]), inline=True)
             await ctx.respond(embed=embed)
-    @slash_command(guild_ids=guilds, description="Get the latency to a Minecraft Server.")
+    @status.error
+    async def statuserror(self, ctx, error):
+        await ctx.respond("Something went wrong...")
+        raise error
+    @slash_command(description="Get the latency to a Minecraft Server.")
     async def latency(self, ctx: discord.ApplicationContext, ip: Option(str, "IP of the MC server", required=True)):
         result=latencyraw(ip)
         if result == "Fail":
@@ -101,6 +74,10 @@ class Static(commands.Cog):
             embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
             embed.add_field(name="Note:", value="This result is the latency from the bot to the server.", inline=True)
             await ctx.respond(embed=embed)
+    @latency.error
+    async def latencyerror(self, ctx, error):
+        await ctx.respond("Something went wrong...")
+        raise error
 
 def setup(bot):
     print("Loading extension Static")

@@ -2,10 +2,7 @@ import discord
 from discord.commands import slash_command , Option
 from discord.ext import commands
 from discord.ext.commands import MissingPermissions
-import json
-import requests
-import motor
-import motor.motor_asyncio
+import json, requests, motor, motor.motor_asyncio
 from main import guilds
 
 #mongodb setup
@@ -19,14 +16,14 @@ class dc(commands.Cog):
     def __init__(self, bot):
         self.bot=bot
 
-    @slash_command(guild_ids=guilds, description="Setup MSS for your server!")
+    @slash_command(description="Setup MSS for your server!")
     @commands.has_permissions(administrator=True)
-    async def serversetup(self, ctx, ip: Option(str, "The ip of the server.", required=False)):
+    async def serversetup(self, ctx, ip: Option(str, "The ip of the server.", required=False), channel: Option(str, "Channel for updating chart.", required=False)):
         if ip==None:
             embed=discord.Embed(title="A simple Minecraft Server Status bot! ", color=color)
             embed.set_thumbnail(url="https://me.technotalks.net/ProjectMSS.png")
             embed.set_author(name=f"Welcome to {self.bot.user.display_name}!")
-            embed.add_field(name="/setup ", value="To setup this command please run this command and provide an ip for the desired server.", inline=True)
+            embed.add_field(name="/setup ", value="To setup this command please run this command and provide an ip for the desired server. (ex. /serversetup ip:mc.hypixel.net )", inline=True)
             embed.add_field(name="Updating Chart", value="Coming Soon!", inline=False)
             await ctx.respond(embed=embed)
         else:
@@ -47,7 +44,7 @@ class dc(commands.Cog):
         else:
             await ctx.respond("Something went wrong...")
             raise error
-    @slash_command(guild_ids=guilds, description="Get's status of hotkeyed server!")
+    @slash_command(description="Get's status of hotkeyed server!")
     async def server(self, ctx):
         inputid=ctx.guild_id
         #sip=read_json(inputid)
