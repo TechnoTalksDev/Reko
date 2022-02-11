@@ -1,4 +1,4 @@
-# ProjectMSS
+# Reko (Formerly: Project MSS)
 A Minecraft Server Status checker discord bot! Still in development not near finished I'll update this readme when the project is closer to being finished!
 ## Errors
 If you try and run the code with exactly whats there now you will run into a couple errors!
