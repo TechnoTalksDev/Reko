@@ -1,6 +1,7 @@
 import discord
 from discord.commands import slash_command , Option
 from discord.ext import commands
+from discord.ui import Button, View
 from discord.ext.commands import MissingPermissions
 import json, requests, motor, motor.motor_asyncio
 #from main import guilds
@@ -11,6 +12,22 @@ db=cluster.discord
 collection=db.mss
 
 color=0x6bf414
+
+
+class resetView(View):
+    def __init__(self, data, ctx):
+        super().__init__(timeout=15)
+        self.data=data
+        self.ctx=ctx
+    
+    @discord.ui.button(label="Reset", style=discord.ButtonStyle.danger, emoji="<:reset:941872105618812978>")
+    async def button_callback(self, button, interaction):
+        await collection.delete_many(self.data)
+        await interaction.response.edit_message(content="Previously stored IP cleared!", view=None)
+    async def on_timeout(self):
+        for child in self.children:
+            child.disabled = True
+        await self.ctx.interaction.edit_original_message(content="You have already setup an ip... Hit the reset button bellow (*The button has expired please run the command again*) or, run this command again with `reset` as the ip value, to clear the stored ip.", view=self)
 
 class dc(commands.Cog):
     def __init__(self, bot):
@@ -23,7 +40,7 @@ class dc(commands.Cog):
             embed=discord.Embed(title="A simple Minecraft Server Status bot! ", color=color)
             embed.set_thumbnail(url="https://me.technotalks.net/ProjectMSS.png")
             embed.set_author(name=f"Welcome to {self.bot.user.display_name}!")
-            embed.add_field(name="/setup ", value="To setup this command please run this command and provide an ip for the desired server. (ex. /serversetup ip:mc.hypixel.net )", inline=True)
+            embed.add_field(name="/server ", value="To setup this command please run this command and provide an ip for the desired server. (ex. `/serversetup ip:mc.hypixel.net` )", inline=True)
             embed.add_field(name="Updating Chart", value="Coming Soon!", inline=False)
             await ctx.respond(embed=embed)
         else:
@@ -36,7 +53,8 @@ class dc(commands.Cog):
                 await collection.delete_many(findguild)
                 await ctx.respond("Previously stored IP cleared!")
             else:
-                await ctx.respond("You have already setup an ip... Run this command again with `reset` as the ip value to clear the stored ip.")
+                view=resetView(findguild, ctx)
+                await ctx.respond("You have already setup an ip... Hit the reset button bellow or, run this command again with `reset` as the ip value, to clear the stored ip.", view=view)
     @serversetup.error
     async def serversetuperror(self, ctx, error):
         if isinstance(error, MissingPermissions):

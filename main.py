@@ -22,7 +22,7 @@ bot.load_extension("extensions.dc")
 bot.load_extension("extensions.tasks")
 
 #ping command
-@bot.slash_command(description="Latency of the bot to Discord")
+@bot.slash_command(description="Gives stats of the bot.")
 async def ping(ctx):
     uptime = str(datetime.timedelta(seconds=int(round(time.time()-startTime))))
     embed = discord.Embed(title=f"{bot.user.display_name} Stats", color=color)
@@ -30,7 +30,7 @@ async def ping(ctx):
     embed.add_field(name="Ping",value=f"`{round(bot.latency * 1000)}ms`",inline=True)
     embed.add_field(name="Uptime", value=f"`{uptime}`", inline=True)
     embed.add_field(name="Servers", value=f"`{len(bot.guilds)}`", inline=True)
-    embed.add_field(name="Version", value="`0.1.2`", inline=True)
+    embed.add_field(name="Version", value="`1.1.2`", inline=True)
     await ctx.respond(embed=embed)
 
 @bot.event
@@ -42,13 +42,22 @@ async def on_message(message):
 
 @bot.event
 async def on_guild_join(guild):
-    embed=discord.Embed(title="Thanks for inviting me!", description="Run `/help` to see all my commands and their uses!", color=0x59f406)
-    embed.set_thumbnail(url="https://me.technotalks.net/ProjectMSS.png")
-    embed.add_field(name="\u200B", value="Try `/status` to check the status of a server immediately!", inline=False)
-    embed.add_field(name="\u200B", value="Please note that this is a **BETA**! Please report any bugs (*or suggestions!*) in my server [Join Now](https://discord.com/invite/8vNHAA36fR)", inline=True)
-    embed.set_footer(text="Have fun! 🕶️")
-    await guild.text_channels[0].send(embed=embed)
-
+    for channel in guild.text_channels:
+        if channel.name == "general":
+            embed=discord.Embed(title="Thanks for inviting me!", description="Run `/help` to see all my commands and their uses!", color=0x59f406)
+            embed.set_thumbnail(url="https://me.technotalks.net/ProjectMSS.png")
+            embed.add_field(name="\u200B", value="Try `/status` to check the status of a server immediately!", inline=False)
+            embed.add_field(name="\u200B", value="Please note that this is a **BETA**! Please report any bugs (*or suggestions!*) in my server [Join Now](https://discord.com/invite/8vNHAA36fR)", inline=True)
+            embed.set_footer(text="Have fun! 🕶️")
+            await channel.send(embed=embed)
+        elif channel.permissions_for(guild.me).send_messages:
+            embed=discord.Embed(title="Thanks for inviting me!", description="Run `/help` to see all my commands and their uses!", color=0x59f406)
+            embed.set_thumbnail(url="https://me.technotalks.net/ProjectMSS.png")
+            embed.add_field(name="\u200B", value="Try `/status` to check the status of a server immediately!", inline=False)
+            embed.add_field(name="\u200B", value="Please note that this is a **BETA**! Please report any bugs (*or suggestions!*) in my server [Join Now](https://discord.com/invite/8vNHAA36fR)", inline=True)
+            embed.set_footer(text="Have fun! 🕶️")
+            await channel.send(embed=embed)
+        break    
 #reload extensions
 @bot.slash_command(description="Reloads extensions.")
 @discord.is_owner()

@@ -25,7 +25,7 @@ class Static(commands.Cog):
     async def help(self, ctx):
         embed=discord.Embed(title="Help & Important Info!", description="Lists all the commands and their uses! If you need more assistance, have found a bug, or have a suggestion, then please join the Support Server: [Join now!](https://discord.com/invite/8vNHAA36fR).", color=0x35d232)
         embed.set_thumbnail(url="https://me.technotalks.net/ProjectMSS.png")
-        embed.add_field(name="__Commands__", value="`Ping`: Ping of the bot to the Discord API \n`Developer`: Sends info about the developer of this bot!\n`Status`: Get's the status of any MC Server!\n`Latency`: Get's the latency to a minecraft server in ms.\n`Server`: Get's the status of the set MC Server! Set by the admins!\n`Serversetup [*Admin ONLY Command*]`: This command is used to setup the guild specific features", inline=True)
+        embed.add_field(name="__Commands__", value="`Ping`: Various stats of the bot \n`Developer`: Sends info about the developer of this bot!\n`Status`: Get's the status of any MC Server!\n`Latency`: Get's the latency to a minecraft server in ms.\n`Server`: Get's the status of the set MC Server! Set by the admins!\n`Serversetup [*Admin ONLY Command*]`: This command is used to setup the guild specific features", inline=True)
         embed.add_field(name="\u200B", value=f"💻 Developed by TechnoTalks, Support Server: [Join now!](https://discord.com/invite/8vNHAA36fR), Thank you for using {self.bot.user.display_name}!", inline=False)
         await ctx.respond(embed=embed)
     #dev command self advertising go brrr
