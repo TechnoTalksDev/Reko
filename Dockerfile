@@ -3,6 +3,6 @@
 FROM balenalib/aarch64-alpine-python:latest
 WORKDIR /app
 COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
+RUN pip install -r requirements.txt
 COPY . .
 CMD [ "python3", "-m" , "main", "run"]
