@@ -30,7 +30,7 @@ async def ping(ctx):
     embed.add_field(name="Ping",value=f"`{round(bot.latency * 1000)}ms`",inline=True)
     embed.add_field(name="Uptime", value=f"`{uptime}`", inline=True)
     embed.add_field(name="Servers", value=f"`{len(bot.guilds)}`", inline=True)
-    embed.add_field(name="Version", value="`1.1.2`", inline=True)
+    embed.add_field(name="Version", value="`0.2.0`", inline=True)
     await ctx.respond(embed=embed)
 
 @bot.event
