@@ -1,6 +1,7 @@
-import discord
+import discord, datetime, time, os
 from discord.ext import commands, tasks
-import datetime, time
+from quart import Quart, redirect, url_for, render_template, request
+from routes.utils import app
 #bot client
 activity = discord.Activity(type=discord.ActivityType.watching, name="Minecraft Servers")
 bot = discord.Bot(activity=activity)
@@ -9,6 +10,11 @@ color=0x6bf414
 #getting token from token file
 with open("./secrets/token", "r") as f:
     token = f.read().strip()
+#starting quart for website
+app = Quart(__name__)
+@app.route("/")
+async def home():
+  return await render_template("index.html", guilds=len(bot.guilds))
 #startup message
 @bot.event
 async def on_ready():
@@ -72,4 +78,7 @@ async def reloaderror(ctx, error):
     await ctx.respond("Something went wrong...")
     raise error
 #running bot
-bot.run(token)
+def run():
+  bot.loop.create_task(app.run_task('0.0.0.0', port=80))
+  bot.run(token)
+run()

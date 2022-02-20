@@ -7,9 +7,11 @@ import json, requests, motor, motor.motor_asyncio
 #from main import guilds
 
 #mongodb setup
-cluster = motor.motor_asyncio.AsyncIOMotorClient("10.0.0.210", 27017)
+with open("./secrets/mongo_password", "r") as f:
+    mongo_password = f.read().strip()
+cluster = motor.motor_asyncio.AsyncIOMotorClient("mongodb+srv://TechnoTalks:"+mongo_password+"@main.rpbbi.mongodb.net/discord?retryWrites=true&w=majority")
 db=cluster.discord
-collection=db.mss
+collection=db.reko
 
 color=0x6bf414
 
