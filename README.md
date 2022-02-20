@@ -2,7 +2,7 @@
 A Minecraft Server Status checker discord bot! Still in development not near finished I'll update this readme when the project is closer to being finished!
 ## Version Numbers
 
-## Errors
+## Setup
 If you try and run the code with exactly whats there now you will run into a couple errors!
 1. Please replace the placeholder file with a file called "token" (no file extension is needed) and paste in the token of the bot.
 2. Please replace the ip and port in dc.py for the MongoDB connection to connect to your MongoDB database.
