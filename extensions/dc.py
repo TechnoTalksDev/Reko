@@ -4,8 +4,10 @@ from discord.ext import commands
 from discord.ui import Button, View
 from discord.ext.commands import MissingPermissions
 from dotenv import load_dotenv
-load_dotenv("secrets\.env")
 #mongodb setup
+try:
+    load_dotenv("secrets\.env")
+except: pass
 mongo_password=os.getenv("MONGO_PASSWORD")
 cluster = motor.motor_asyncio.AsyncIOMotorClient("mongodb+srv://TechnoTalks:"+mongo_password+"@main.rpbbi.mongodb.net/discord?retryWrites=true&w=majority")
 db=cluster.discord

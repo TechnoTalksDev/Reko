@@ -9,7 +9,9 @@ bot = discord.Bot(activity=activity)
 #setting color of bot
 color=0x6bf414
 #getting token from env
-load_dotenv("secrets\.env")
+try:
+    load_dotenv("secrets\.env")
+except: pass
 token = os.getenv("TOKEN")
 #starting quart for website
 app = Quart(__name__)
