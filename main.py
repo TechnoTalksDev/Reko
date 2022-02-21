@@ -2,14 +2,15 @@ import discord, datetime, time, os
 from discord.ext import commands, tasks
 from quart import Quart, redirect, url_for, render_template, request
 from routes.utils import app
+from dotenv import load_dotenv
 #bot client
 activity = discord.Activity(type=discord.ActivityType.watching, name="Minecraft Servers")
 bot = discord.Bot(activity=activity)
 #setting color of bot
 color=0x6bf414
-#getting token from token file
-with open("./secrets/token", "r") as f:
-    token = f.read().strip()
+#getting token from env
+load_dotenv("secrets\.env")
+token = os.getenv("TOKEN")
 #starting quart for website
 app = Quart(__name__)
 @app.route("/")

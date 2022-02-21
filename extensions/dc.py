@@ -1,14 +1,12 @@
-import discord
+import discord, json, requests, motor, motor.motor_asyncio, os
 from discord.commands import slash_command , Option
 from discord.ext import commands
 from discord.ui import Button, View
 from discord.ext.commands import MissingPermissions
-import json, requests, motor, motor.motor_asyncio
-#from main import guilds
-
+from dotenv import load_dotenv
+load_dotenv("secrets\.env")
 #mongodb setup
-with open("./secrets/mongo_password", "r") as f:
-    mongo_password = f.read().strip()
+mongo_password=os.getenv("MONGO_PASSWORD")
 cluster = motor.motor_asyncio.AsyncIOMotorClient("mongodb+srv://TechnoTalks:"+mongo_password+"@main.rpbbi.mongodb.net/discord?retryWrites=true&w=majority")
 db=cluster.discord
 collection=db.reko

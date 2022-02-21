@@ -4,3 +4,4 @@ tokendev
 data.json
 testing/
 mongo_password
+*.env
