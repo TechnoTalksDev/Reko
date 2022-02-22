@@ -1,7 +1,7 @@
 # Reko (Formerly: Project MSS)
 A Minecraft Server Status checker discord bot! Still in development not near finished I'll update this readme when the project is closer to being finished!
 ## Website
-Reko has a website now! Still working out domains but here's a temporary url: [Linky](http://reko-beta.westus2.azurecontainer.io)
+Reko has a website now! Go check it out! [Linky](https://technotalksdev.github.io/Reko/)
 ## Setup
 If you try and run the code with exactly whats there now you will run into a couple errors!
 1. Please create and .env file in the secrets folder with the value TOKEN. Please do not include quotes around the token of your bot.
@@ -15,4 +15,4 @@ I do wish to publish this bot in the future!
 ## Thanks
 Thanks for viewing the repo I will update the bot (and this readme) and make it better in the future! 
 
-PS: Go add the bot! Link on the [website](http://reko-beta.westus2.azurecontainer.io)!
+PS: Go add the bot! Link on the [website](https://technotalksdev.github.io/Reko/)!
