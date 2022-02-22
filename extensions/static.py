@@ -55,9 +55,9 @@ class Static(commands.Cog):
             
             embed=discord.Embed(title="Status of {}".format(ip), description="{}".format(motd),color=color)
             embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
-            embed.add_field(name="Online:", value="{}".format(data["online"]), inline=True)
-            embed.add_field(name="Player Count:", value="{}".format(data["players"]["online"]), inline=True)
-            embed.add_field(name="Version:", value="{}".format(data["version"]), inline=True)
+            embed.add_field(name="IP: ", value="`{}`".format(data["ip"]))
+            embed.add_field(name="Player Count:", value="`{}`".format(data["players"]["online"]), inline=True)
+            embed.add_field(name="Version:", value="`{}`".format(data["version"]), inline=True)
             await ctx.respond(embed=embed)
     @status.error
     async def statuserror(self, ctx, error):

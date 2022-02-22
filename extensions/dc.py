@@ -85,9 +85,9 @@ class dc(commands.Cog):
                     motd+=data["motd"]["clean"][i]
                 embed=discord.Embed(title="Status of {}".format(sip), description="{}".format(motd),color=color)
                 embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{sip}")
-                embed.add_field(name="Online:", value="{}".format(data["online"]), inline=True)
-                embed.add_field(name="Player Count:", value="{}".format(data["players"]["online"]), inline=True)
-                embed.add_field(name="Version:", value="{}".format(data["version"]), inline=True)
+                embed.add_field(name="IP: ", value="`{}`".format(data["ip"]))
+                embed.add_field(name="Player Count:", value="`{}`".format(data["players"]["online"]), inline=True)
+                embed.add_field(name="Version:", value="`{}`".format(data["version"]), inline=True)
                 await ctx.respond(embed=embed)
     @server.error
     async def servererror(self, ctx, error):

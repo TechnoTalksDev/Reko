@@ -1,11 +1,9 @@
 import discord, datetime, time, os
 from discord.ext import commands, tasks
-from quart import Quart, redirect, url_for, render_template, request
-from routes.utils import app
 from dotenv import load_dotenv
 #bot client
 activity = discord.Activity(type=discord.ActivityType.watching, name="Minecraft Servers")
-bot = discord.Bot(activity=activity)
+bot = discord.Bot(activity=activity, debug_guilds=[846192394214965268])
 #setting color of bot
 color=0x6bf414
 #getting token from env
@@ -13,11 +11,6 @@ try:
     load_dotenv("secrets\.env")
 except: pass
 token = os.getenv("TOKEN")
-#starting quart for website
-app = Quart(__name__)
-@app.route("/")
-async def home():
-  return await render_template("index.html", guilds=len(bot.guilds))
 #startup message
 @bot.event
 async def on_ready():
@@ -39,7 +32,7 @@ async def ping(ctx):
     embed.add_field(name="Ping",value=f"`{round(bot.latency * 1000)}ms`",inline=True)
     embed.add_field(name="Uptime", value=f"`{uptime}`", inline=True)
     embed.add_field(name="Servers", value=f"`{len(bot.guilds)}`", inline=True)
-    embed.add_field(name="Version", value="`v0.3.4-beta`", inline=True)
+    embed.add_field(name="Version", value="`v0.3.5-beta`", inline=True)
     await ctx.respond(embed=embed)
 
 @bot.event
@@ -82,6 +75,5 @@ async def reloaderror(ctx, error):
     raise error
 #running bot
 def run():
-  bot.loop.create_task(app.run_task('0.0.0.0', port=80))
   bot.run(token)
 run()
