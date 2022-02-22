@@ -3,7 +3,7 @@ from discord.ext import commands, tasks
 from dotenv import load_dotenv
 #bot client
 activity = discord.Activity(type=discord.ActivityType.watching, name="Minecraft Servers")
-bot = discord.Bot(activity=activity, debug_guilds=[846192394214965268])
+bot = discord.Bot(activity=activity)
 #setting color of bot
 color=0x6bf414
 #getting token from env
