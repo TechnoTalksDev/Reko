@@ -1,8 +1,9 @@
+import discord, requests, json, geocoder
 from discord.commands import slash_command
 from discord.ext import commands
 from discord.commands import Option
-import discord, requests, json
 from mcstatus import MinecraftServer
+from staticmap import StaticMap, CircleMarker
 #from main import guilds
 #color of bot
 color=0x6bf414
@@ -15,6 +16,22 @@ def latencyraw(ip):
         return ping
     except:
         return "Fail"
+#function to get maps
+def get_map(ip):
+    g = geocoder.ip(ip)
+    coords = g.latlng
+    #create map
+    tiles_url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+    m = StaticMap(500, 500, url_template=tiles_url)
+    #create marker for location
+    marker_outline = CircleMarker((coords[1], coords[0]), "white", 18)
+    marker = CircleMarker((coords[1], coords[0]), "#6bf414", 12)
+    #add marker
+    m.add_marker(marker_outline)
+    m.add_marker(marker)
+    #render the map and save it
+    image = m.render(zoom=5)
+    image.save("extensions/maps/"+ip+".png")
 #Static Cog
 class Static(commands.Cog):
     #init function to setup bot class
@@ -25,7 +42,7 @@ class Static(commands.Cog):
     async def help(self, ctx):
         embed=discord.Embed(title="Help & Important Info!", description="Lists all the commands and their uses! If you need more assistance, have found a bug, or have a suggestion, then please join the Support Server: [Join now!](https://discord.com/invite/8vNHAA36fR).", color=0x35d232)
         embed.set_thumbnail(url="https://me.technotalks.net/ProjectMSS.png")
-        embed.add_field(name="__Commands__", value="`Ping`: Various stats of the bot \n`Developer`: Sends info about the developer of this bot!\n`Status`: Get's the status of any MC Server!\n`Latency`: Get's the latency to a minecraft server in ms.\n`Server`: Get's the status of the set MC Server! Set by the admins!\n`Serversetup [*Admin ONLY Command*]`: This command is used to setup the guild specific features", inline=True)
+        embed.add_field(name="__Commands__", value="`Ping`: Various stats of the bot \n`Developer`: Sends info about the developer of this bot\n`Status`: Get's the status of any MC Server\n`Latency`: Get's the latency to a minecraft server in *ms*\n`Server`: Get's the status of the set MC Server, *set by /serversetup*\n`Serversetup [*Admin ONLY Command*]`: This command is used to setup the guild specific features\n`Location`: Get the approximate location of a Minecraft server", inline=True)
         embed.add_field(name="\u200B", value=f"💻 Developed by TechnoTalks, Support Server: [Join now!](https://discord.com/invite/8vNHAA36fR), Thank you for using {self.bot.user.display_name}!", inline=False)
         await ctx.respond(embed=embed)
     #dev command self advertising go brrr
@@ -78,6 +95,23 @@ class Static(commands.Cog):
     async def latencyerror(self, ctx, error):
         await ctx.respond("Something went wrong...")
         raise error
+    
+    @slash_command(description="Get the aproximate location of a server!")
+    async def location(self, ctx, ip: Option(str, "IP of the desired server", required=True)):
+        url = "https://api.mcsrvstat.us/2/{}".format(ip)
+        thing = requests.get(url)
+        data = json.loads(thing.content)
+        raw_ip = data["ip"]
+        get_map(raw_ip)
+        embed=discord.Embed(title=f"Approximate location of {ip}", description="Please note that proxies, and ip spoofing exists, so this location may not be accurate!", color=color)
+        image=discord.File(f"extensions/maps/{raw_ip}.png")
+        embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
+        embed.set_image(url=f"attachment://{raw_ip}.png")
+        embed.set_footer(text="This is an approximate result and may not represent reality.")
+        await ctx.respond(embed=embed, file=image)
+    @location.error
+    async def locationerror(self, ctx, error):
+        await ctx.respond("> **Something went wrong...** 😭 Please make sure the server IP is correct. ")
 
 def setup(bot):
     print("Loading extension Static")

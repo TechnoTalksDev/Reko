@@ -5,3 +5,5 @@ data.json
 testing/
 mongo_password
 *.env
+map.html
+maps/
