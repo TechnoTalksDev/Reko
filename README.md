@@ -3,7 +3,7 @@ A Minecraft Server Status checker discord bot! Still in development not near fin
 ## Website
 Reko has a website now! Go check it out! [Linky](https://technotalksdev.github.io/Reko/)
 ## To-Do
-To check out features and updates that are planned for the future check out the [Trello board](https://trello.com/b/XV2S5PwY/to-do)!
+To check out features and updates that are planned for the future check out the [GitHub Project](https://github.com/users/TechnoTalksDev/projects/3/views/1)!
 ## Setup
 If you try and run the code with exactly whats there now you will run into a couple errors!
 1. Please create and .env file in the secrets folder with the value TOKEN. Please do not include quotes around the token of your bot.
