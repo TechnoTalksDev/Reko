@@ -114,11 +114,7 @@ class Static(commands.Cog):
     @location.error
     async def locationerror(self, ctx, error):
         await ctx.respond("> **Something went wrong...** 😭 Please make sure the server IP is correct. ")
-        if isinstance(error, PermissionError):
-            print("Image access 'denied' by windows (Command should be fine)")
-        else:
-            print(error)
-            #raise error
+        print(error)
 
 def setup(bot):
     print("Loading extension Static")
