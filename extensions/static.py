@@ -1,4 +1,4 @@
-import discord, requests, json, geocoder
+import discord, requests, json, geocoder, os
 from discord.commands import slash_command
 from discord.ext import commands
 from discord.commands import Option
@@ -98,6 +98,7 @@ class Static(commands.Cog):
     
     @slash_command(description="Get the aproximate location of a server!")
     async def location(self, ctx, ip: Option(str, "IP of the desired server", required=True)):
+        await ctx.defer()
         url = "https://api.mcsrvstat.us/2/{}".format(ip)
         thing = requests.get(url)
         data = json.loads(thing.content)
@@ -109,9 +110,15 @@ class Static(commands.Cog):
         embed.set_image(url=f"attachment://{raw_ip}.png")
         embed.set_footer(text="This is an approximate result and may not represent reality.")
         await ctx.respond(embed=embed, file=image)
+        os.remove(f"extensions/maps/{raw_ip}.png")
     @location.error
     async def locationerror(self, ctx, error):
         await ctx.respond("> **Something went wrong...** 😭 Please make sure the server IP is correct. ")
+        if isinstance(error, PermissionError):
+            print("Image access 'denied' by windows (Command should be fine)")
+        else:
+            print(error)
+            #raise error
 
 def setup(bot):
     print("Loading extension Static")
