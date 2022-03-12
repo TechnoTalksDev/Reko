@@ -1,6 +1,7 @@
-import discord, datetime, time, os
+import discord, datetime, time, os, psutil
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
+from psutil._common import bytes2human
 #bot client
 activity = discord.Activity(type=discord.ActivityType.watching, name="Minecraft Servers")
 bot = discord.Bot(activity=activity)
@@ -33,11 +34,12 @@ async def ping(ctx):
     embed.add_field(name="Uptime", value=f"`{uptime}`", inline=True)
     embed.add_field(name="Servers", value=f"`{len(bot.guilds)}`", inline=True)
     embed.add_field(name="Version", value="`v0.4.2-beta`", inline=True)
+    embed.add_field(name="RAM", value=f"`{bytes2human(psutil.virtual_memory()[3])} used`", inline=True)
     await ctx.respond(embed=embed)
 
 @bot.event
 async def on_message(message):
-    if message.content.startswith("<@!879790233099587595>"):
+    if message.content.startswith("<@!879790233099587595>") or message.content.startswith("<@!940048033154998312>"):
        channel=message.channel
        await channel.send("Please run the help command!")
        await message.add_reaction("👍")

@@ -12,7 +12,7 @@ def latencyraw(ip):
     try:
         server = MinecraftServer.lookup(ip)
         status = server.status()
-        ping="{}".format(status.latency)
+        ping=status.latency
         return ping
     except:
         return "Fail"
@@ -32,9 +32,10 @@ def get_map(ip):
     #render the map and save it
     image = m.render(zoom=5)
     image.save("extensions/maps/"+ip+".png")
+    return coords
 #Static Cog
 class Static(commands.Cog):
-    #init function to setup bot class
+    #init function to setup bot instance
     def __init__(self, bot):
         self.bot=bot
     #help command
@@ -56,7 +57,7 @@ class Static(commands.Cog):
         embed.add_field(name="Want your own bot?", value="Visit my site for more details on how to get your own bot! https://me.technotalks.net/services.html", inline=False)
         embed.set_footer(text="Thanks for reading!")
         await ctx.respond(embed=embed)
-
+    #status command
     @slash_command(description= "Get the Status of any Minecraft Server.")
     async def status(self, ctx, ip: Option(str, "The ip of the server.", required=True)):
         url = "https://api.mcsrvstat.us/2/{}".format(ip)
@@ -98,23 +99,24 @@ class Static(commands.Cog):
     
     @slash_command(description="Get the aproximate location of a server!")
     async def location(self, ctx, ip: Option(str, "IP of the desired server", required=True)):
-        await ctx.defer()
+        #await ctx.defer()
         url = "https://api.mcsrvstat.us/2/{}".format(ip)
-        thing = requests.get(url)
-        data = json.loads(thing.content)
+        request = requests.get(url)
+        data = json.loads(request.content)
         raw_ip = data["ip"]
-        get_map(raw_ip)
-        embed=discord.Embed(title=f"Approximate location of {ip}", description="Please note that proxies, and ip spoofing exists, so this location may not be accurate!", color=color)
+        coords=get_map(raw_ip)
+        embed=discord.Embed(title=f"Approximate location of {ip}", color=color)
         image=discord.File(f"extensions/maps/{raw_ip}.png")
         embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
+        embed.add_field(name="Latitude & Longitude", value=f"__Lat__: {coords[0]} __Long__: {coords[1]}")
         embed.set_image(url=f"attachment://{raw_ip}.png")
-        embed.set_footer(text="This is an approximate result and may not represent reality.")
+        embed.set_footer(text="Please note that proxies, and ip spoofing exists, so this location may not be accurate!")
         await ctx.respond(embed=embed, file=image)
         os.remove(f"extensions/maps/{raw_ip}.png")
     @location.error
     async def locationerror(self, ctx, error):
         await ctx.respond("> **Something went wrong...** 😭 Please make sure the server IP is correct. ")
-        print(error)
+        raise error
 
 def setup(bot):
     print("Loading extension Static")
