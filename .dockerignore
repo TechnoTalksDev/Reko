@@ -3,3 +3,4 @@ testing
 *.env
 .Website
 .maps
+.venv

@@ -7,6 +7,8 @@ activity = discord.Activity(type=discord.ActivityType.watching, name="Minecraft 
 bot = discord.Bot(activity=activity)
 #setting color of bot
 color=0x6bf414
+#process of bot
+process = psutil.Process(os.getpid())
 #getting token from env
 try:
     load_dotenv("secrets\.env")
@@ -34,7 +36,7 @@ async def ping(ctx):
     embed.add_field(name="Uptime", value=f"`{uptime}`", inline=True)
     embed.add_field(name="Servers", value=f"`{len(bot.guilds)}`", inline=True)
     embed.add_field(name="Version", value="`v0.4.2-beta`", inline=True)
-    embed.add_field(name="RAM", value=f"`{bytes2human(psutil.virtual_memory()[3])} used`", inline=True)
+    embed.add_field(name="RAM", value=f"`{bytes2human(process.memory_info().rss)} used`", inline=True)
     await ctx.respond(embed=embed)
 
 @bot.event
