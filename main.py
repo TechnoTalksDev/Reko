@@ -35,7 +35,7 @@ async def ping(ctx):
     embed.add_field(name="Ping",value=f"`{round(bot.latency * 1000)}ms`",inline=True)
     embed.add_field(name="Uptime", value=f"`{uptime}`", inline=True)
     embed.add_field(name="Servers", value=f"`{len(bot.guilds)}`", inline=True)
-    embed.add_field(name="Version", value="`v0.4.2-beta`", inline=True)
+    embed.add_field(name="Version", value="`v0.4.3-beta`", inline=True)
     embed.add_field(name="RAM", value=f"`{bytes2human(process.memory_info().rss)} used`", inline=True)
     await ctx.respond(embed=embed)
 
