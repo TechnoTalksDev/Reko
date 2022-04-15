@@ -94,7 +94,7 @@ class dc(commands.Cog):
         await ctx.respond("Something went wrong...")
         raise error
 def setup(bot):
-    print("Loading extension DataCommands...")
+    print("[DataCommands] Loading extension...")
     bot.add_cog(dc(bot))
 def teardown(bot):
-    print("Unloading extension DataCommands...")
+    print("[DataCommands] Unloading extension...")

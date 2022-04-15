@@ -69,7 +69,7 @@ class tasksCog(commands.Cog):
         print("[Status]: Error in status task. Most probably a awaiting error.")
 
 def setup(bot):
-    print("Loading extension Tasks...")
+    print("[Tasks] Loading extension...")
     bot.add_cog(tasksCog(bot))
 def teardown(bot):
-    print("Unloading extension Tasks")
+    print("[Tasks] Unloading extension...")

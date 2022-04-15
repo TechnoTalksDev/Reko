@@ -2,11 +2,16 @@ import discord, datetime, time, os, psutil
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from psutil._common import bytes2human
+from colorama import init, Fore
 #bot client
 activity = discord.Activity(type=discord.ActivityType.watching, name="Minecraft Servers")
 bot = discord.Bot(activity=activity)
 #setting color of bot
+init(True)
 color=0x6bf414
+#version
+version = "v0.4.4-beta"
+print(Fore.GREEN+"REKO "+version)
 #process of bot
 process = psutil.Process(os.getpid())
 #getting token from env
@@ -17,7 +22,12 @@ token = os.getenv("TOKEN")
 #startup message
 @bot.event
 async def on_ready():
-    print(f"Logged in as {bot.user}")
+    print(Fore.LIGHTBLUE_EX+
+""".-. .-. .-. . . . . .-.   .-. .-. .   . . .-. 
+ |  |-  |   |-| |\| | |    |  |-| |   |<  `-. 
+ '  `-' `-' ' ` ' ` `-'    '  ` ' `-' ' ` `-'
+presents: """)
+    print(f"[Reko] Logged in as {bot.user}")
     global startTime
     startTime=time.time()
 
@@ -35,7 +45,7 @@ async def ping(ctx):
     embed.add_field(name="Ping",value=f"`{round(bot.latency * 1000)}ms`",inline=True)
     embed.add_field(name="Uptime", value=f"`{uptime}`", inline=True)
     embed.add_field(name="Servers", value=f"`{len(bot.guilds)}`", inline=True)
-    embed.add_field(name="Version", value="`v0.4.3-beta`", inline=True)
+    embed.add_field(name="Version", value=f"`{version}`", inline=True)
     embed.add_field(name="RAM", value=f"`{bytes2human(process.memory_info().rss)} used`", inline=True)
     await ctx.respond(embed=embed)
 

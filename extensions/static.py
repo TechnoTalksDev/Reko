@@ -119,7 +119,7 @@ class Static(commands.Cog):
         raise error
 
 def setup(bot):
-    print("Loading extension Static")
+    print("[Static] Loading extension...")
     bot.add_cog(Static(bot))
 def teardown(bot):
-    print("Unloading extension Static")
+    print("[Static] Unloading extension...")
