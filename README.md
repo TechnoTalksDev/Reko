@@ -25,7 +25,7 @@
 - Player stats (Planned)
 
 ## Website
-Reko has a website now! Go check it out! [Link](https://technotalksdev.github.io/Reko/)
+Reko has a website now! Go check it out! [Link](https://reko.technotalks.net/)
 ## Setup
 I request that you don't run a seperate instance of the bot and instead just [invite]() it. If your are testing or contributing to the bot then please go ahead!
 
@@ -42,4 +42,4 @@ I do wish to publish this bot in the future!
 ## Thanks
 Thanks for viewing the repo I will update the bot (and this readme) and make it better in the future! 
 
-PS: Go add the bot! Link on the [website](https://technotalksdev.github.io/Reko/)!
+PS: Go add the bot! Link on the [website](https://reko.technotalks.net/)!
