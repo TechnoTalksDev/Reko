@@ -27,7 +27,7 @@
 ## Website
 Reko has a website now! Go check it out! [Link](https://reko.technotalks.net/)
 ## Setup
-I request that you don't run a seperate instance of the bot and instead just [invite]() it. If your are testing or contributing to the bot then please go ahead!
+I request that you don't run a seperate instance of the bot and instead just [invite](https://reko.technotalks.net/) it. If your are testing or contributing to the bot then please go ahead!
 
 If you try and run the code with exactly whats there now you will run into a couple errors!
 1. Please create and .env file in the secrets folder with the value TOKEN. Please do not include quotes around the token of your bot.
