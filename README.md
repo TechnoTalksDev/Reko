@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="700" src="https://www.technotalks.net/static/main/images/RekoGithub.png" alt="Reko Banner">
+  <img width="700" src="https://www.technotalks.net/static/main/images/rekobanner.png" alt="Reko Banner">
 </p>
 <h1 align="center">
 	Reko (Formerly: Project MSS) 
