@@ -7,7 +7,7 @@
 
 
 <p align="center">
-	<strong>A Minecraft Server Status discord bot! Lots of work in progress!</strong>
+	<strong>A Minecraft Server Status discord bot! WIP!</strong>
 </p>
 
 <p align="center">
@@ -17,16 +17,19 @@
 </p>
 
 ## Key Features
-- Get player count, server version, and motd
-- Get ping to server (ping from bot to server)
-- Get approximate location (not depoyed yet)
-- Set a server for your guild to easily check status
-- Updating Chart of player count and other info (To-Do)
-- Player stats (Planned)
+- Get **player count**, **online players** (To-Do), **server version**, and **motd**
+- Get **latency** to server (ping from bot to server)
+- Get the **approximate location**
+- Set a server for your **guild to track**
+- **Updating Chart** of player count and other info (To-Do)
+- **Player stats** (Planned)
+- Track when **players join and leave** (To-Do)
+- **@Online Players role** automatically assigned to online players on the server (To-Do)
+- _Hack Minecraft Servers_ (This is joke...)
 
 ## Website
 Reko has a website now! Go check it out! [Link](https://reko.technotalks.net/)
-## Setup
+## Setup (OUTDATED will update later)
 I request that you don't run a seperate instance of the bot and instead just [invite](https://reko.technotalks.net/) it. If your are testing or contributing to the bot then please go ahead!
 
 If you try and run the code with exactly whats there now you will run into a couple errors!
