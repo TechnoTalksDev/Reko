@@ -26,7 +26,8 @@
 - Track when **players join and leave** (To-Do)
 - **@Online Players role** automatically assigned to online players on the server (To-Do)
 - _Hack Minecraft Servers_ (This is joke...)
-
+## To-Do list
+If you would like to contribute or just want to see whats coming then take a look at the [To-do](https://github.com/users/TechnoTalksDev/projects/3) list!
 ## Website
 Reko has a website now! Go check it out! [Link](https://reko.technotalks.net/)
 ## Setup (OUTDATED will update later)
