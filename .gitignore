@@ -8,3 +8,4 @@ mongo_password
 map.html
 maps/
 .venv/
+server.py

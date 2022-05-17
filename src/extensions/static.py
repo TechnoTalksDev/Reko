@@ -2,15 +2,16 @@ import discord, requests, json, geocoder, os
 from discord.commands import slash_command
 from discord.ext import commands
 from discord.commands import Option
-from mcstatus import MinecraftServer
+from mcstatus import JavaServer
 from staticmap import StaticMap, CircleMarker
+
 #from main import guilds
 #color of bot
 color=0x6bf414
 #function to get server latency
 def latencyraw(ip):
     try:
-        server = MinecraftServer.lookup(ip)
+        server = JavaServer.lookup(ip)
         status = server.status()
         ping=status.latency
         return ping
@@ -31,7 +32,7 @@ def get_map(ip):
     m.add_marker(marker)
     #render the map and save it
     image = m.render(zoom=5)
-    image.save("extensions/maps/"+ip+".png")
+    image.save("src/maps/"+ip+".png")
     return coords
 #Static Cog
 class Static(commands.Cog):
@@ -42,19 +43,18 @@ class Static(commands.Cog):
     @slash_command(description="Lists all the commands of the bot and their uses")
     async def help(self, ctx):
         embed=discord.Embed(title="Help & Important Info!", description="Lists all the commands and their uses! If you need more assistance, have found a bug, or have a suggestion, then please join the Support Server: [Join now!](https://discord.com/invite/8vNHAA36fR).", color=0x35d232)
-        embed.set_thumbnail(url="https://me.technotalks.net/ProjectMSS.png")
-        embed.add_field(name="__Commands__", value="`Ping`: Various stats of the bot \n`Developer`: Sends info about the developer of this bot\n`Status`: Get's the status of any MC Server\n`Latency`: Get's the latency to a minecraft server in *ms*\n`Server`: Get's the status of the set MC Server, *set by /serversetup*\n`Serversetup [*Admin ONLY Command*]`: This command is used to setup the guild specific features\n`Location`: Get the approximate location of a Minecraft server", inline=True)
+        embed.set_thumbnail(url="https://www.technotalks.net/ProjectMSS.png")
+        embed.add_field(name="__Commands__", value="`Ping`: Various stats of the bot \n`Developer`: Sends info about the developer of this bot\n`Status`: Get's the status of any MC Server\n`Latency`: Get's the latency to a minecraft server in *ms*\n`Server`: Get's the status of the set MC Server, *set by /setup*\n`Setup [*Admin ONLY Command*]`: This command is used to setup the guild specific features\n`Location`: Get the approximate location of a Minecraft server", inline=True)
         embed.add_field(name="\u200B", value=f"💻 Developed by TechnoTalks, Support Server: [Join now!](https://discord.com/invite/8vNHAA36fR), Thank you for using {self.bot.user.display_name}!", inline=False)
         await ctx.respond(embed=embed)
     #dev command self advertising go brrr
     @slash_command(description="Information about the developer!")
     async def dev(self, ctx):
-        embed=discord.Embed(title="About the developer!", description="yea the guy who made this bot :D", color=0x00bfff)
-        embed.set_author(name="TechnoTalks", url="https://me.technotalks.net/", icon_url="https://me.technotalks.net/PFP.png",)
-        embed.set_thumbnail(url="https://me.technotalks.net/PFP.png")
-        embed.add_field(name="About me!", value="I'm an aspiring developer who really loves tech! I love to develop things and its just fun for me (*Most of the time). I love to make new things and see that its being used by actual people! For more about me visit: https://me.technotalks.net/about.html!", inline=False)
-        embed.add_field(name="Website", value="https://me.technotalks.net/ (or click on my name above :D)", inline=False)
-        embed.add_field(name="Want your own bot?", value="Visit my site for more details on how to get your own bot! https://me.technotalks.net/services.html", inline=False)
+        embed=discord.Embed(title="O whats this...", description="yea the guy who made this bot :D", color=0x00bfff)
+        embed.set_author(name="TechnoTalks", url="https://www.technotalks.net/", icon_url="https://www.technotalks.net/static/main/images/TT.png",)
+        embed.set_thumbnail(url="https://www.technotalks.net/static/main/images/TT.png")
+        embed.add_field(name="Website", value="https://www.technotalks.net/ (or click on my name above :D)", inline=False)
+        embed.add_field(name="Want your own bot?", value="Visit my site for more details on how to get your own bot! https://www.technotalks.net/services.html", inline=False)
         embed.set_footer(text="Thanks for reading!")
         await ctx.respond(embed=embed)
     #status command
@@ -76,6 +76,13 @@ class Static(commands.Cog):
             embed.add_field(name="IP: ", value="`{}`".format(data["ip"]))
             embed.add_field(name="Player Count:", value="`{}`".format(data["players"]["online"]), inline=True)
             embed.add_field(name="Version:", value="`{}`".format(data["version"]), inline=True)
+            try:
+                player_list = ""
+                for i in data["players"]["list"]:
+                    player_list = player_list + f"{i}, "
+                embed.add_field(name="Player list:", value="`{}`".format(player_list[:-2]), inline=False)
+            except: 
+                pass
             await ctx.respond(embed=embed)
     @status.error
     async def statuserror(self, ctx, error):
@@ -106,13 +113,13 @@ class Static(commands.Cog):
         raw_ip = data["ip"]
         coords=get_map(raw_ip)
         embed=discord.Embed(title=f"Approximate location of {ip}", color=color)
-        image=discord.File(f"extensions/maps/{raw_ip}.png")
+        image=discord.File(f"src/maps/{raw_ip}.png")
         embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
         embed.add_field(name="Latitude & Longitude", value=f"__Lat__: {coords[0]} __Long__: {coords[1]}")
         embed.set_image(url=f"attachment://{raw_ip}.png")
         embed.set_footer(text="Please note that proxies, and ip spoofing exists, so this location may not be accurate!")
         await ctx.respond(embed=embed, file=image)
-        os.remove(f"extensions/maps/{raw_ip}.png")
+        os.remove(f"src/maps/{raw_ip}.png")
     @location.error
     async def locationerror(self, ctx, error):
         await ctx.respond("> **Something went wrong...** 😭 Please make sure the server IP is correct. ")

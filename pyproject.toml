@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "Reko"
+version = "0.4.4-beta"
+description = "https://github.com/TechnoTalksDev/Reko"
+homepage = "https://reko.technotalks.net"
+authors = ["TechnoTalksDev <technotalksyt101@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+colorama = "^0.4.4"
+psutil = "^5.9.0"
+python-dotenv = "^0.20.0"
+requests = "^2.27.1"
+geocoder = "^1.38.1"
+mcstatus = "^9.0.4"
+staticmap = "^0.5.5"
+motor = "^3.0.0"
+py-cord = {git = "https://github.com/Pycord-Development/pycord"}
+
+[tool.poetry.dev-dependencies]
+
+[tool.poetry.scripts]
+runbot = "python:main.py"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
