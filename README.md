@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="700" src="https://technotalksdev.github.io/Reko/Website/static/images/rekobanner.png" alt="Reko Banner">
+  <img width="700" src="https://www.technotalks.net/static/main/images/rekobanner.png" alt="Reko Banner">
 </p>
 <h1 align="center">
 	Reko (Formerly: Project MSS) 
@@ -7,7 +7,7 @@
 
 
 <p align="center">
-	<strong>A Minecraft Server Status discord bot! Lots of work in progress!</strong>
+	<strong>A Minecraft Server Status discord bot! WIP!</strong>
 </p>
 
 <p align="center">
@@ -17,17 +17,21 @@
 </p>
 
 ## Key Features
-- Get player count, server version, and motd
-- Get ping to server (ping from bot to server)
-- Get approximate location (not depoyed yet)
-- Set a server for your guild to easily check status
-- Updating Chart of player count and other info (To-Do)
-- Player stats (Planned)
-
+- Get **player count**, **online players** (To-Do), **server version**, and **motd**
+- Get **latency** to server (ping from bot to server)
+- Get the **approximate location**
+- Set a server for your **guild to track**
+- **Updating Chart** of player count and other info (To-Do)
+- **Player stats** (Planned)
+- Track when **players join and leave** (To-Do)
+- **@Online Players role** automatically assigned to online players on the server (To-Do)
+- _Hack Minecraft Servers_ (This is joke...)
+## To-Do list
+If you would like to contribute or just want to see whats coming then take a look at the [To-do](https://github.com/users/TechnoTalksDev/projects/3) list!
 ## Website
-Reko has a website now! Go check it out! [Link](https://technotalksdev.github.io/Reko/)
-## Setup
-I request that you don't run a seperate instance of the bot and instead just [invite]() it. If your are testing or contributing to the bot then please go ahead!
+Reko has a website now! Go check it out! [Link](https://reko.technotalks.net/)
+## Setup (OUTDATED will update later)
+I request that you don't run a seperate instance of the bot and instead just [invite](https://reko.technotalks.net/) it. If your are testing or contributing to the bot then please go ahead!
 
 If you try and run the code with exactly whats there now you will run into a couple errors!
 1. Please create and .env file in the secrets folder with the value TOKEN. Please do not include quotes around the token of your bot.
@@ -42,4 +46,4 @@ I do wish to publish this bot in the future!
 ## Thanks
 Thanks for viewing the repo I will update the bot (and this readme) and make it better in the future! 
 
-PS: Go add the bot! Link on the [website](https://technotalksdev.github.io/Reko/)!
+PS: Go add the bot! Link on the [website](https://reko.technotalks.net/)!
