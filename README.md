@@ -25,24 +25,31 @@
 - **Player stats** (Planned)
 - Track when **players join and leave** (To-Do)
 - **@Online Players role** automatically assigned to online players on the server (To-Do)
-- _Hack Minecraft Servers_ (This is joke...)
+- _Hack Minecraft Servers_ (_This is a joke...I think_)
 ## To-Do list
-If you would like to contribute or just want to see whats coming then take a look at the [To-do](https://github.com/users/TechnoTalksDev/projects/3) list!
+If you would like to **contribute**, or just want to see **upcoming features**, then take a look at the [To-do](https://github.com/users/TechnoTalksDev/projects/3) list!
 ## Website
-Reko has a website now! Go check it out! [Link](https://reko.technotalks.net/)
-## Setup (OUTDATED will update later)
-I request that you don't run a seperate instance of the bot and instead just [invite](https://reko.technotalks.net/) it. If your are testing or contributing to the bot then please go ahead!
+**Reko has a website now!** Go check it out! [Link](https://reko.technotalks.net/)
+## Setup
+I request that if you want to test the main bot that you don't run a seperate instance of the bot and instead just [invite](https://reko.technotalks.net/) it. If your are developing or contributing to the bot then please go ahead!
 
-If you try and run the code with exactly whats there now you will run into a couple errors!
-1. Please create and .env file in the secrets folder with the value TOKEN. Please do not include quotes around the token of your bot.
+**Dependencies** and **enviroment variables**:
+1. Installing dependencies (Really quite simple because of... you guessed it! **_Poetry_**!)
+	- You do need to **[install poetry](https://python-poetry.org/docs/#installation)** first!
+	- Then simpily run `poetry install`!
+	- Poetry will then do all the work and install all the packages and their dependencies for you!
+	- **Note:** If your using an editor like VSCode and don't want to manually change the venv path then you can look into [this poetry config option](https://python-poetry.org/docs/configuration/#virtualenvsin-project) which creates the **venv in the project directory** simplifying things
+2. Setting up **enviroment variables**
+	- Please create and .env file in the secrets folder with the variable TOKEN
+	- And a [proper connection uri](https://pymongo.readthedocs.io/en/4.1.1/api/pymongo/mongo_client.html#pymongo.mongo_client.MongoClient) in the MONGO_LINK variable. 
+	- Please do not include quotes around the variables.
 ```
 TOKEN=A123C456B7890
+MONGO_LINK=localhost:27017
 ```
-2. Please replace the connection to the MongoDB database in dc.py to the connection to your database.
 
 ## Licence/Terms of use
-I haven't setup a Licence yet but you are welcome to fork the project and play around with it! If you plan on publishing your forked version (with valid and extensive changes), please make sure to run it by me once (You can contact me through my [Discord Server](https://discord.gg/8vNHAA36fR)). This is to prevent people from copying the bot and posting it as their own. To make it clear you can fork/clone this project to learn/play around with it but you **may not** publish this forked version of this bot unless approved by me!
-I do wish to publish this bot in the future!
+I present to you the **GNU Affero General Public License**! Please browse through the license for basic info. If you plan on publishing your forked version (with valid and extensive changes), please make sure to run it by me once (You can contact me through my [Discord Server](https://discord.gg/8vNHAA36fR)), I would love to see what you've done with the bot!.
 ## Thanks
 Thanks for viewing the repo I will update the bot (and this readme) and make it better in the future! 
 
