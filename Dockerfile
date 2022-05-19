@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1
 FROM python:3.10-slim-buster
-WORKDIR /reko
+WORKDIR /app
 # setting up poetry
-COPY pyproject.toml /reko
-COPY poetry.lock /reko
+COPY pyproject.toml /app
+COPY poetry.lock /app
 ENV PYTHONPATH=${PYTHONPATH}:${PWD} 
 RUN pip3 install poetry
 RUN poetry config virtualenvs.create false
