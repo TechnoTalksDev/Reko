@@ -1,4 +1,4 @@
-import discord, requests, json, geocoder, os
+import discord, requests, json, geocoder, os, socket
 from discord.commands import slash_command
 from discord.ext import commands
 from discord.commands import Option
@@ -9,11 +9,11 @@ from staticmap import StaticMap, CircleMarker
 #color of bot
 color=0x6bf414
 #function to get server latency
-def latencyraw(ip):
+async def latencyraw(ip):
     try:
         server = JavaServer.lookup(ip)
-        status = server.status()
-        ping=status.latency
+        status = await server.async_status()
+        ping = await server.pingstatus.latency
         return ping
     except:
         return "Fail"
@@ -54,43 +54,48 @@ class Static(commands.Cog):
         embed.set_author(name="TechnoTalks", url="https://www.technotalks.net/", icon_url="https://www.technotalks.net/static/main/images/TT.png",)
         embed.set_thumbnail(url="https://www.technotalks.net/static/main/images/TT.png")
         embed.add_field(name="Website", value="https://www.technotalks.net/ (or click on my name above :D)", inline=False)
-        embed.add_field(name="Want your own bot?", value="Visit my site for more details on how to get your own bot! https://www.technotalks.net/services.html", inline=False)
+        embed.add_field(name="Want your own bot?", value="I make custom discord bot's so if you would like one head to [my site](https://www.technotalks.net/)!", inline=False)
         embed.set_footer(text="Thanks for reading!")
         await ctx.respond(embed=embed)
     #status command
     @slash_command(description= "Get the Status of any Minecraft Server.")
     async def status(self, ctx, ip: Option(str, "The ip of the server.", required=True)):
-        url = "https://api.mcsrvstat.us/2/{}".format(ip)
-        thing = requests.get(url)
-        data = json.loads(thing.content)
-        if data["online"] == False:
+        await ctx.defer()
+        try:
+            server = JavaServer.lookup(ip, 3)
+            status = await server.async_status()
+        except:
             embed=discord.Embed(title=f"Error {ip}", description="This server either does not exist or is not online. If you think this is an error, then please join the support server to report this!", color=0xff1a1a)
             await ctx.respond(embed=embed)
-        else:
-            motd=""
-            for i in range(len(data["motd"]["clean"])):
-                motd+=data["motd"]["clean"][i]
-            
-            embed=discord.Embed(title="Status of {}".format(ip), description="{}".format(motd),color=color)
-            embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
-            embed.add_field(name="IP: ", value="`{}`".format(data["ip"]))
-            embed.add_field(name="Player Count:", value="`{}`".format(data["players"]["online"]), inline=True)
-            embed.add_field(name="Version:", value="`{}`".format(data["version"]), inline=True)
-            try:
-                player_list = ""
-                for i in data["players"]["list"]:
-                    player_list = player_list + f"{i}, "
-                embed.add_field(name="Player list:", value="`{}`".format(player_list[:-2]), inline=False)
-            except: 
-                pass
-            await ctx.respond(embed=embed)
+            return
+        #get motd
+        mc_codes = ["§0", "§1", "§2", "§3", "§4", "§5", "§6", "§7", "§8", "§9", "§a", "§b", "§c", "§d", "§e", "§f","§g", "§l", "§n"]
+        motd = status.description
+        for code in mc_codes:
+            motd = motd.replace(code, "")
+
+        embed=discord.Embed(title=f"Status of {ip}", description=f"{motd}",color=color)
+        embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
+        try:
+            ip_addr = socket.gethostbyname(ip)
+            embed.add_field(name="IP: ", value=f"`{ip_addr}`")
+        except: pass
+        embed.add_field(name="Player Count:", value=f"`{status.players.online}`", inline=True)
+        embed.add_field(name="Version:", value=f"`{status.version.name}`", inline=True)
+        if status.players.sample != None and status.players.sample != []:
+            player_list=""
+            for player in status.players.sample:
+                print(player.name)
+                player_list += player.name.replace(".", "")+", "
+            embed.add_field(name="Player list:", value=f"`{player_list[:-2]}`", inline=False)
+        await ctx.respond(embed=embed)
     @status.error
     async def statuserror(self, ctx, error):
-        await ctx.respond("Something went wrong...")
+        await ctx.respond("> **Something went wrong**... 😢")
         raise error
     @slash_command(description="Get the latency to a Minecraft Server.")
     async def latency(self, ctx: discord.ApplicationContext, ip: Option(str, "IP of the MC server", required=True)):
-        result=latencyraw(ip)
+        result= await latencyraw(ip)
         if result == "Fail":
             embed=discord.Embed(title="Error", description="This server does not exist or is offline", color=0xff1a1a)
             await ctx.respond(embed=embed)
@@ -124,7 +129,7 @@ class Static(commands.Cog):
     async def locationerror(self, ctx, error):
         await ctx.respond("> **Something went wrong...** 😭 Please make sure the server IP is correct. ")
         raise error
-
+    
 def setup(bot):
     print("[Static] Loading extension...")
     bot.add_cog(Static(bot))

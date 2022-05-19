@@ -73,6 +73,7 @@ class tasksCog(commands.Cog):
                     player_count = status.players.online
                 except Exception as e: 
                     await channel.send(f"> **ERROR:** The provided server is not responding to status requests!\n> Here's some info to help...\n> IP: {ip}, Port: {port}")
+                    return
                 #player_count = info["players"]["online"]
                 current = {guild_id: [player_count]}
                 if guild_id in guild_cache:

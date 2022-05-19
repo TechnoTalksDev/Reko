@@ -76,30 +76,33 @@ async def on_guild_join(guild):
             await channel.send(embed=embed)
         break    
 
-#reload extensions
+#owner commands
 """
-@bot.slash_command(description="Reloads extensions.")
-@discord.is_owner()
+@bot.slash_command(description="Reloads extensions.", guilds=[846192394214965268])
+@commands.is_owner()
 async def reload(ctx):
-    bot.reload_extension("extensions.static")
-    bot.reload_extension("extensions.dc")
-    bot.reload_extension("extensions.tasks")
+    await bot.reload_extension("extensions.static")
+    await bot.reload_extension("extensions.dc")
+    await bot.reload_extension("extensions.tasks")
     print("Done reloading!")
     await ctx.respond("Reloaded cog's and extensions.")
-
 @reload.error
 async def reloaderror(ctx, error):
     await ctx.respond("Something went wrong...")
-    raise error
+    if error == discord.ext.commands.errors.NotOwner or error == "You do not own this bot.":
+        pass
+    print(error)
 
-@bot.slash_command(description="Kill the bot")
-@discord.is_owner()
-async def kill(self, ctx):
-    print("[Reko] BYE!!! (Killed through command)")
-    quit()
-
+@bot.slash_command(description="Kill the bot", guilds=[846192394214965268])
+@commands.is_owner()
+async def kill(ctx):
+    print("\n[Reko] BYE!!! (Killed through command)")
+    await ctx.respond("Bye!")         
+    await bot.close()
 @kill.error
 async def killerror(ctx, error):
     await ctx.respond("Something went wrong...")
-    raise error
+    if error == "You do not own this bot.":
+        pass
+    print(error)
 """

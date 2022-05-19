@@ -1,10 +1,11 @@
-import discord, json, requests, motor, motor.motor_asyncio, os
+import discord, json, requests, motor, motor.motor_asyncio, os, socket
 from pkg_resources import require
 from discord.commands import slash_command , Option
 from discord.ext import commands
 from discord.ui import Button, View
 from discord.ext.commands import MissingPermissions
 from dotenv import load_dotenv
+from mcstatus import JavaServer
 #mongodb setup
 try:
     load_dotenv("src\secrets\.env")
@@ -30,6 +31,10 @@ class resetView(View):
     async def button_callback(self, button, interaction):
         if self.value == "track":
             await tracking_coll.delete_many(self.data)
+        elif self.value == "/server":
+            await hotkey_coll.delete_many(self.data)
+        else:
+            print("[DC] Stored Feature Data NOT RECOGNIZED")
         await interaction.response.edit_message(content="Previously stored configuration cleared! Please run the setup command again...", view=None)
     async def on_timeout(self):
         for child in self.children:
@@ -81,11 +86,11 @@ class setupView(View):
         self.ctx=ctx
         self.feature = None
 
-    @discord.ui.select( # the decorator that lets you specify the properties of the select menu
-        placeholder = "Choose a feature to setup!", # the placeholder text that will be displayed if nothing is selected
-        min_values = 1, # the minimum number of values that must be selected by the users
-        max_values = 1, # the maxmimum number of values that can be selected by the users
-        options = [ # the list of options from which users can choose, a required field
+    @discord.ui.select( 
+        placeholder = "Choose a feature to setup!", #
+        min_values = 1, 
+        max_values = 1, 
+        options = [ 
             discord.SelectOption(
                 label="/server",
                 description="Easily get the status of this server"
@@ -101,31 +106,37 @@ class setupView(View):
         ]
     )
     async def select_callback(self, select, interaction): # the function called when the user is done selecting options
+        await interaction.response.defer()
         self.feature = select.values[0]
 
     @discord.ui.button(label="Setup", style=discord.ButtonStyle.success, emoji="⚙️")
     async def button_callback(self, button, interaction):
-        if self.feature is not None:
-            if self.feature == "/server":
-                findguild= await hotkey_coll.find_one({"_id": interaction.guild_id})
-                if findguild:
-                    view=resetView(findguild, self.ctx)
-                    await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature.", view=view)
-                else:
-                    button.disabled = True
-                    await self.ctx.interaction.edit_original_message(view = self)
-                    await interaction.response.send_modal(setupModal(ctx=self.ctx, feature=self.feature, title="Reko Setup"))
-            elif self.feature == "Tracking":
-                findguild= await tracking_coll.find_one({"_id": interaction.guild_id})
-                if findguild:
-                    view=resetView(findguild, self.ctx, "track")
-                    await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature.", view=view)
-                else:
-                    button.disabled = True
-                    await self.ctx.interaction.edit_original_message(view = self)
-                    await interaction.response.send_modal(setupModal(ctx=self.ctx, feature=self.feature, title="Reko Setup"))
+        if interaction.user != self.ctx.user:
+            await interaction.send_message("You didn't run this command!", ephemeral=True)
         else:
-            await interaction.response.send_message("Please select the feature you would like to setup first!")
+            if self.feature is not None:
+                if self.feature == "/server":
+                    findguild= await hotkey_coll.find_one({"_id": interaction.guild_id})
+                    if findguild:
+                        view=resetView(findguild, self.ctx, "/server")
+                        await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature.", view=view, ephemeral=True)
+                    else:
+                        button.disabled = True
+                        await self.ctx.interaction.edit_original_message(view = self)
+                        await interaction.response.send_modal(setupModal(ctx=self.ctx, feature=self.feature, title="Reko Setup"))
+                elif self.feature == "Tracking":
+                    findguild= await tracking_coll.find_one({"_id": interaction.guild_id})
+                    if findguild:
+                        view=resetView(findguild, self.ctx, "track")
+                        await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature.", view=view, ephemeral=True)
+                    else:
+                        button.disabled = True
+                        await self.ctx.interaction.edit_original_message(view = self)
+                        await interaction.response.send_modal(setupModal(ctx=self.ctx, feature=self.feature, title="Reko Setup"))
+                else:
+                    await interaction.response.send_message("This feature is still a work in progress and is not complete!", ephemeral=True)           
+            else:
+                await interaction.response.send_message("Please select the feature you would like to setup first!")
     async def on_timeout(self):
         for child in self.children:
             child.disabled = True
@@ -138,12 +149,13 @@ class dc(commands.Cog):
     @slash_command(description="Setup Reko for your server!")
     @commands.has_permissions(administrator=True)
     async def setup(self, ctx):
-        embed=discord.Embed(title="A simple Minecraft Server Status bot! ", color=color)
-        embed.set_thumbnail(url="https://me.technotalks.net/ProjectMSS.png")
-        embed.set_author(name=f"Welcome to {self.bot.user.display_name}!")
-        embed.add_field(name="/server ", value="Please hit the setup button bellow to setup this command... To setup this command manually please run this command and provide an ip for the desired server. (ex. `/setup ip:mc.hypixel.net` )", inline=True)
-        embed.add_field(name="Tracking", value="Track player !", inline=False)
-        embed.add_field(name="Updating Chart", value="Coming Soon!", inline=False)
+        embed=discord.Embed(title="Setup up Reko for your server! ", description="Please select the feature you would like to setup with the **select menu** and then hit the **green setup button** to set it up for your server!", color=color)
+        embed.set_thumbnail(url="https://www.technotalks.net/static/main/images/Reko_Circular-removebg-preview.png")
+        embed.set_author(name=f"Customizable features of Reko")
+        embed.add_field(name="/server ", value="This command allows users to easily check the status of the set server **without having to manually type the ip** every time!", inline=True)
+        embed.add_field(name="Tracking", value="**Track player joins and leaves** of your set server! (Player names coming soon!)", inline=False)
+        embed.add_field(name="Updating Chart", value="**Coming Soon!**", inline=False)
+        embed.add_field(name="\u200B", value="Please report bugs in the [support server](https://discord.gg/8vNHAA36fR)! It really helps the bot grow!")
         view=setupView(ctx)
         await ctx.respond(embed=embed, view=view)
     @setup.error
@@ -163,30 +175,34 @@ class dc(commands.Cog):
            await ctx.respond("This command has not been setup properly please ask the admins to run /setup to setup this command!")    
         else:
             try:
-                sip=findguild["mcip"]
-                url = "https://api.mcsrvstat.us/2/{}".format(sip)
-                thing = requests.get(url)
-                data = json.loads(thing.content)
-                if data["online"] == False:
-                    embed=discord.Embed(title=f"IP Error: {sip}", description="This server either does not exist or is not online. If you think this is an error, then please join the support server to report this!", color=0xff1a1a)
+                ip=findguild["mcip"]
+                await ctx.defer()
+                try:
+                    server = JavaServer.lookup(ip, 3)
+                    status = await server.async_status()
+                except:
+                    embed=discord.Embed(title=f"Error {ip}", description="This server either does not exist or is not online. If you think this is an error, then please join the support server to report this!", color=0xff1a1a)
                     await ctx.respond(embed=embed)
-                else:
-                    motd=""
-                    for i in range(len(data["motd"]["clean"])):
-                        motd+=data["motd"]["clean"][i]
-                    embed=discord.Embed(title="Status of {}".format(sip), description="{}".format(motd),color=color)
-                    embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{sip.strip()}")
-                    embed.add_field(name="IP: ", value="`{}`".format(data["ip"]))
-                    embed.add_field(name="Player Count:", value="`{}`".format(data["players"]["online"]), inline=True)
-                    embed.add_field(name="Version:", value="`{}`".format(data["version"]), inline=True)
-                    try:
-                        player_list = ""
-                        for i in data["players"]["list"]:
-                            player_list = player_list + f"{i}, "
-                        embed.add_field(name="Player list:", value="`{}`".format(player_list[:-2]), inline=False)
-                    except: 
-                        pass
-                    await ctx.respond(embed=embed)
+                #get motd
+                mc_codes = ["§0", "§1", "§2", "§3", "§4", "§5", "§6", "§7", "§8", "§9", "§a", "§b", "§c", "§d", "§e", "§f","§g", "§l", "§n"]
+                motd = status.description
+                for code in mc_codes:
+                    motd = motd.replace(code, "")
+
+                embed=discord.Embed(title=f"Status of {ip}", description=f"{motd}",color=color)
+                embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
+                try:
+                    ip_addr = socket.gethostbyname(ip)
+                    embed.add_field(name="IP: ", value=f"`{ip_addr}`")
+                except: pass
+                embed.add_field(name="Player Count:", value=f"`{status.players.online}`", inline=True)
+                embed.add_field(name="Version:", value=f"`{status.version.name}`", inline=True)
+                if status.players.sample != None and status.players.sample != []:
+                    player_list=""
+                    for player in status.players.sample:
+                        player_list += player.name.replace(".", "")+", "
+                    embed.add_field(name="Player list:", value=f"`{player_list[:-2]}`", inline=False)
+                await ctx.respond(embed=embed)
             except KeyError:
                 await ctx.respond("This command has not been setup properly please ask the admins to run /setup to setup this command!")
 

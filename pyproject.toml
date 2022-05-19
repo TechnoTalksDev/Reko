@@ -15,7 +15,7 @@ geocoder = "^1.38.1"
 mcstatus = "^9.0.4"
 staticmap = "^0.5.5"
 motor = "^3.0.0"
-py-cord = {git = "https://github.com/Pycord-Development/pycord"}
+py-cord = "2.0.0rc1"
 
 [tool.poetry.dev-dependencies]
 
