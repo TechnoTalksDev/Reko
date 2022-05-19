@@ -1,7 +1,6 @@
 from asyncio import tasks
 from pydoc import doc
 import random, discord, datetime, motor, motor.motor_asyncio, os, sys
-from src.extensions.server import get_info
 from discord.commands import slash_command
 from discord.commands import Option
 from discord.ext import commands, tasks
