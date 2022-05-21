@@ -25,8 +25,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Discord Details**
  - OS: [e.g. Windows]
- - Browser *If applicable ignore if using application client* [e.g. chrome, safari]
- - Version [e.g. 22]
+ - Bot Version (obtainable through /ping): [e.g. 22]
 
 **Additional context**
 Add any other context about the problem here.
