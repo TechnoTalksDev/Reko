@@ -47,7 +47,7 @@ class General(commands.Cog):
         
         embed.set_thumbnail(url="https://www.technotalks.net/ProjectMSS.png")
         
-        embed.add_field(name="__Commands__", value="`Ping`: Various stats of the bot \n`Developer`: Sends info about the developer of this bot\n`Status`: Get's the status of any MC Server\n`Latency`: Get's the latency to a minecraft server in *ms*\n`Server`: Get's the status of the set MC Server, *set by /setup*\n`Setup [*Admin ONLY Command*]`: This command is used to setup the guild specific features\n`Location`: Get the approximate location of a Minecraft server", inline=True)
+        embed.add_field(name="__Commands__", value="`Ping`: Various stats of the bot \n`Developer`: Sends info about the developer of this bot\n`Status`: Gets the status of any MC Server\n`Latency`: Gets the latency to a minecraft server in *ms*\n`Server`: Gets the status of the set MC Server, *set by /setup*\n`Setup [*Admin ONLY Command*]`: This command is used to setup the guild specific features\n`Location`: Get the approximate location of a Minecraft server", inline=True)
         
         embed.add_field(name="\u200B", value=f"💻 Developed by TechnoTalks, Support Server: [Join now!](https://discord.com/invite/8vNHAA36fR), Thank you for using {self.bot.user.display_name}!", inline=False)
         
