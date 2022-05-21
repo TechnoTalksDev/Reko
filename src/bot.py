@@ -1,5 +1,5 @@
-import discord, datetime, time, os, psutil
-from discord.ext import commands, tasks
+import discord, datetime, time, os, psutil, sys
+from discord.ext import commands
 from dotenv import load_dotenv
 from psutil._common import bytes2human
 from colorama import init, Fore
@@ -15,7 +15,7 @@ try:
 except: pass
 token = os.getenv("TOKEN")
 #version
-version = "v0.5.2-beta"
+version = "v0.5.4-beta"
 print(Fore.GREEN+"REKO "+version+"\nEnviroment: ")
 #process of bot
 process = psutil.Process(os.getpid())
@@ -32,8 +32,8 @@ presents: """)
     startTime=time.time()
 
 #loading extensions
-bot.load_extension("src.extensions.static")
-bot.load_extension("src.extensions.dc")
+bot.load_extension("src.extensions.general")
+bot.load_extension("src.extensions.custom")
 bot.load_extension("src.extensions.tasks")
 
 #ping command
@@ -49,13 +49,6 @@ async def ping(ctx):
     embed.add_field(name="Version", value=f"`{version}`", inline=True)
     embed.add_field(name="RAM", value=f"`{bytes2human(process.memory_info().rss)} used`", inline=True)
     await ctx.respond(embed=embed)
-
-@bot.event
-async def on_message(message):
-    if message.content.startswith("<@!879790233099587595>") or message.content.startswith("<@!940048033154998312>"):
-       channel=message.channel
-       await channel.send("Please run the help command!")
-       await message.add_reaction("👍")
 
 @bot.event
 async def on_guild_join(guild):
@@ -77,23 +70,21 @@ async def on_guild_join(guild):
         break    
 
 #owner commands
-"""
-@bot.slash_command(description="Reloads extensions.", guilds=[846192394214965268])
+@bot.slash_command(description="Reloads extensions.", guild_ids=[846192394214965268])
 @commands.is_owner()
 async def reload(ctx):
-    await bot.reload_extension("extensions.static")
-    await bot.reload_extension("extensions.dc")
-    await bot.reload_extension("extensions.tasks")
-    print("Done reloading!")
+    bot.reload_extension("extensions.static")
+    bot.reload_extension("extensions.dc")
+    bot.reload_extension("extensions.tasks")
     await ctx.respond("Reloaded cog's and extensions.")
 @reload.error
 async def reloaderror(ctx, error):
     await ctx.respond("Something went wrong...")
     if error == discord.ext.commands.errors.NotOwner or error == "You do not own this bot.":
         pass
-    print(error)
+    print(f"[Reload] Error with reloading the bot: {error}, Line #: {sys.exc_info()[-1].tb_lineno}")
 
-@bot.slash_command(description="Kill the bot", guilds=[846192394214965268])
+@bot.slash_command(description="Kill the bot", guild_ids=[846192394214965268])
 @commands.is_owner()
 async def kill(ctx):
     print("\n[Reko] BYE!!! (Killed through command)")
@@ -104,5 +95,4 @@ async def killerror(ctx, error):
     await ctx.respond("Something went wrong...")
     if error == "You do not own this bot.":
         pass
-    print(error)
-"""
+    print(f"[Kill] Error with killing the bot: {error}, Line #: {sys.exc_info()[-1].tb_lineno}")

@@ -34,7 +34,7 @@ class resetView(View):
         elif self.value == "/server":
             await hotkey_coll.delete_many(self.data)
         else:
-            print("[DC] Stored Feature Data NOT RECOGNIZED")
+            print("[Custom] Stored Feature Data NOT RECOGNIZED")
         await interaction.response.edit_message(content="Previously stored configuration cleared! Please run the setup command again...", view=None)
     async def on_timeout(self):
         for child in self.children:
@@ -142,7 +142,7 @@ class setupView(View):
             child.disabled = True
         await self.ctx.interaction.edit_original_message(view=self)
 
-class dc(commands.Cog):
+class Custom(commands.Cog):
     def __init__(self, bot):
         self.bot=bot
 
@@ -172,7 +172,7 @@ class dc(commands.Cog):
         findguild=await hotkey_coll.find_one({"_id":inputid})
 
         if not findguild:
-           await ctx.respond("This command has not been setup properly please ask the admins to run /setup to setup this command!")    
+           await ctx.respond("This command has **not been setup properly** please ask the __admins/mods__ to run **/setup** to setup this command!")    
         else:
             try:
                 ip=findguild["mcip"]
@@ -204,14 +204,14 @@ class dc(commands.Cog):
                     embed.add_field(name="Player list:", value=f"`{player_list[:-2]}`", inline=False)
                 await ctx.respond(embed=embed)
             except KeyError:
-                await ctx.respond("This command has not been setup properly please ask the admins to run /setup to setup this command!")
+                await ctx.respond("This command has **not been setup properly** please ask the __admins/mods to run__ **/setup** to setup this command!")
 
     @server.error
     async def servererror(self, ctx, error):
         await ctx.respond("Something went wrong...")
         raise error
 def setup(bot):
-    print("[DataCommands] Loading extension...")
-    bot.add_cog(dc(bot))
+    print("[Custom] Loading extension...")
+    bot.add_cog(Custom(bot))
 def teardown(bot):
-    print("[DataCommands] Unloading extension...")
+    print("[Custom] Unloading extension...")
