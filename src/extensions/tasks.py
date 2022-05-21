@@ -66,6 +66,9 @@ class tasksCog(commands.Cog):
                 channel_id = guild["trackchannel"]
 
                 channel =  self.bot.get_channel(channel_id)
+
+                if channel == None:
+                    return
                 #print(f"[Tasks] (Debug) IP:{ip}, Port: {port}, Port Type: {type(port)} ")
                 
                 try:
