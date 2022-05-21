@@ -165,7 +165,7 @@ class Custom(commands.Cog):
         else:
             await ctx.respond("Something went wrong...")
             raise error
-    @slash_command(description="Get's status of hotkeyed server!")
+    @slash_command(description="Gets status of hotkeyed server!")
     async def server(self, ctx):
         inputid=ctx.guild_id
         #sip=read_json(inputid)
