@@ -1,4 +1,4 @@
-import discord, requests, json, geocoder, os, socket, sys
+import discord, requests, json, geocoder, os, socket, sys, io
 from discord.commands import slash_command
 from discord.ext import commands
 from discord.commands import Option
@@ -31,8 +31,12 @@ def get_map(ip):
     m.add_marker(marker)
     #render the map and save it
     image = m.render(zoom=5)
-    image.save("src/maps/"+ip+".png")
-    return coords
+    
+    with io.BytesIO() as image_binary:
+        image.save(image_binary, format="PNG")
+        image_binary.seek(0)
+        discord_image=discord.File(fp=image_binary, filename="image.png")
+    return coords, discord_image
 #General Cog
 class General(commands.Cog):
     
@@ -161,26 +165,25 @@ class General(commands.Cog):
         #get ip of the server
         raw_ip = socket.gethostbyname(ip)
         
-        #generate map and get coords 
-        coords=get_map(raw_ip)
-        
+        #generate map and store coords and image file
+        map = get_map(raw_ip)
+        coords = map[0]
+        image = map[1]
         #create embed
         embed=discord.Embed(title=f"Approximate location of {ip}", color=color)
-        #get map file
-        image=discord.File(f"src/maps/{raw_ip}.png")
         
         embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
         
         embed.add_field(name="Latitude & Longitude", value=f"__Lat__: {coords[0]} __Long__: {coords[1]}")
         
-        embed.set_image(url=f"attachment://{raw_ip}.png")
+        embed.set_image(url=f"attachment://image.png")
         
         embed.set_footer(text="Please note that proxies, and ip spoofing exists, so this location may not be accurate!")
         
         #send embed
         await ctx.respond(embed=embed, file=image)
-        #delete map after use
-        os.remove(f"src/maps/{raw_ip}.png")
+        #clean up
+        image.close() #Dosent seem to affect memory usuage?
     @location.error
     async def locationerror(self, ctx, error):
         #tell the user their was an error

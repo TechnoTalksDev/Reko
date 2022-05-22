@@ -28,7 +28,7 @@ class resetView(View):
         self.value=value
     
     @discord.ui.button(label="Reset", style=discord.ButtonStyle.danger, emoji="<:reset:941872105618812978>")
-    async def button_callback(self, button, interaction):
+    async def reset_button_callback(self, button, interaction):
         if self.value == "track":
             await tracking_coll.delete_many(self.data)
         elif self.value == "/server":
@@ -36,10 +36,10 @@ class resetView(View):
         else:
             print("[Custom] Stored Feature Data NOT RECOGNIZED")
         await interaction.response.edit_message(content="Previously stored configuration cleared! Please run the setup command again...", view=None)
-    async def on_timeout(self):
+    async def reset_on_timeout(self):
         for child in self.children:
             child.disabled = True
-        await self.ctx.interaction.edit_original_message(content="You have already setup this feature... Hit the reset button bellow (*The button has expired please run the command again*)", view=self)
+        await self.ctx.interaction.edit_original_message(content="*This prompt has expired please run the command again*", view=self)
 
 class setupModal(discord.ui.Modal):
     def __init__(self, ctx, feature, *args, **kwargs) -> None:
@@ -64,7 +64,7 @@ class setupModal(discord.ui.Modal):
                 await interaction.response.send_message("The server command is setup!")
             else:
                 view=resetView(findguild, self.ctx)
-                await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature.", view=view)
+                await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature. (*Dismiss this message to cancel*)", view=view)
         elif self.feature == "Tracking":
             findguild= await tracking_coll.find_one({"_id": sid})
             if not findguild:
@@ -77,7 +77,7 @@ class setupModal(discord.ui.Modal):
                     await interaction.response.send_message("> Please provide a **valid channel name**! 😭\n> *(Valid channel names do not include the # ex. 'tracking' NOT '#tracking')*")
             else:
                 view=resetView(findguild, self.ctx, "track")
-                await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature.", view=view)
+                await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature. (*Dismiss this message to cancel*)", view=view)
         
 
 class setupView(View):
@@ -119,7 +119,7 @@ class setupView(View):
                     findguild= await hotkey_coll.find_one({"_id": interaction.guild_id})
                     if findguild:
                         view=resetView(findguild, self.ctx, "/server")
-                        await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature.", view=view, ephemeral=True)
+                        await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature. (*Dismiss this message to cancel*)", view=view, ephemeral=True)
                     else:
                         button.disabled = True
                         await self.ctx.interaction.edit_original_message(view = self)
@@ -128,7 +128,7 @@ class setupView(View):
                     findguild= await tracking_coll.find_one({"_id": interaction.guild_id})
                     if findguild:
                         view=resetView(findguild, self.ctx, "track")
-                        await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature.", view=view, ephemeral=True)
+                        await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature. (*Dismiss this message to cancel*)", view=view, ephemeral=True)
                     else:
                         button.disabled = True
                         await self.ctx.interaction.edit_original_message(view = self)
