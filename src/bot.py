@@ -1,4 +1,5 @@
 import discord, datetime, time, os, psutil, sys
+import src.utilities as utilities
 from discord.ext import commands
 from dotenv import load_dotenv
 from psutil._common import bytes2human
@@ -6,6 +7,8 @@ from colorama import init, Fore
 #bot client
 activity = discord.Activity(type=discord.ActivityType.watching, name="Minecraft Servers")
 bot = discord.Bot(activity=activity)
+#intializing error logger
+error_logger=utilities.ErrorLogger("Reko")
 #setting color of bot
 init(True)
 color=0x6bf414
@@ -79,10 +82,13 @@ async def reload(ctx):
     await ctx.respond("Reloaded cog's and extensions.")
 @reload.error
 async def reloaderror(ctx, error):
-    await ctx.respond("Something went wrong...")
+    await ctx.respond(embed=utilities.error_message())
     if error == discord.ext.commands.errors.NotOwner or error == "You do not own this bot.":
-        pass
-    print(f"[Reload] Error with reloading the bot: {error}, Line #: {sys.exc_info()[-1].tb_lineno}")
+        return
+    #print(f"[Reload] Error with reloading the bot: {error}, Line #: {sys.exc_info()[-1].tb_lineno}")
+    #print(str(sys.exc_info())+"\n"+str(sys.exc_info()[-1])+"\n")
+    #print(type(sys.exc_info()[-1]))
+    error_logger.log("Reload Command", error, sys.exc_info()[-1])
 
 @bot.slash_command(description="Kill the bot", guild_ids=[846192394214965268])
 @commands.is_owner()
@@ -92,7 +98,7 @@ async def kill(ctx):
     await bot.close()
 @kill.error
 async def killerror(ctx, error):
-    await ctx.respond("Something went wrong...")
+    await ctx.respond(embed=utilities.error_message())
     if error == "You do not own this bot.":
-        pass
-    print(f"[Kill] Error with killing the bot: {error}, Line #: {sys.exc_info()[-1].tb_lineno}")
+        return
+    error_logger.log("Kill Command", error, sys.exc_info()[-1])

@@ -1,4 +1,5 @@
 import discord, json, requests, motor, motor.motor_asyncio, os, socket
+import src.utilities as utilities
 from pkg_resources import require
 from discord.commands import slash_command , Option
 from discord.ext import commands
@@ -163,7 +164,7 @@ class Custom(commands.Cog):
         if isinstance(error, MissingPermissions):
             await ctx.respond(f"You are missing the required permission: **{error.missing_permissions[0].capitalize()}**, to run this command!")
         else:
-            await ctx.respond("Something went wrong...")
+            await ctx.respond(embed=utilities.error_message())
             raise error
     @slash_command(description="Gets status of hotkeyed server!")
     async def server(self, ctx):
@@ -181,8 +182,8 @@ class Custom(commands.Cog):
                     server = JavaServer.lookup(ip, 3)
                     status = await server.async_status()
                 except:
-                    embed=discord.Embed(title=f"Error {ip}", description="This server either does not exist or is not online. If you think this is an error, then please join the support server to report this!", color=0xff1a1a)
-                    await ctx.respond(embed=embed)
+                    await ctx.respond(embed=utilities.unreachable_server(ip))
+                    return
                 #get motd
                 mc_codes = ["§0", "§1", "§2", "§3", "§4", "§5", "§6", "§7", "§8", "§9", "§a", "§b", "§c", "§d", "§e", "§f","§g", "§l", "§n"]
                 motd = status.description
@@ -208,7 +209,7 @@ class Custom(commands.Cog):
 
     @server.error
     async def servererror(self, ctx, error):
-        await ctx.respond("Something went wrong...")
+        await ctx.respond(embed=utilities.error_message())
         raise error
 def setup(bot):
     print("[Custom] Loading extension...")

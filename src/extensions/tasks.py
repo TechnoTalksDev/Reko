@@ -1,12 +1,17 @@
 from asyncio import tasks
 from pydoc import doc
 import random, discord, datetime, motor, motor.motor_asyncio, os, sys
+import src.utilities as utilities
 from discord.commands import slash_command
 from discord.commands import Option
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from colorama import Fore
 from mcstatus import JavaServer
+
+#intialize error_logger & error_message
+error_logger = utilities.ErrorLogger("Tasks")
+
 #mongodb setup
 try:
     load_dotenv("src\secrets\.env")
@@ -54,67 +59,60 @@ class tasksCog(commands.Cog):
     @tasks.loop(seconds=5.0)
     async def track(self):
         coll = mongo_init()
+        cursor = coll.find().sort([('_id', 1)])
+        docs = await cursor.to_list(length=None)
 
-        try:
-            cursor = coll.find().sort([('_id', 1)])
-            docs = await cursor.to_list(length=None)
+        for guild in docs:
+            guild_id = guild["_id"]
+            ip = guild["trackip"]
+            port = guild["trackport"]
+            channel_id = guild["trackchannel"]
 
-            for guild in docs:
-                guild_id = guild["_id"]
-                ip = guild["trackip"]
-                port = guild["trackport"]
-                channel_id = guild["trackchannel"]
+            channel =  self.bot.get_channel(channel_id)
 
-                channel =  self.bot.get_channel(channel_id)
-
-                if channel == None:
-                    return
-                #print(f"[Tasks] (Debug) IP:{ip}, Port: {port}, Port Type: {type(port)} ")
+            if channel == None:
+                return
+            #print(f"[Tasks] (Debug) IP:{ip}, Port: {port}, Port Type: {type(port)} ")
+            
+            try:
+                server = JavaServer(ip, port, 4)
+                status = await server.async_status()
+                player_count = status.players.online
+            
+            except Exception as e: 
+                await channel.send(embed=utilities.error_message())
+                return
+            #player_count = info["players"]["online"]
+            current = {guild_id: [player_count]}
+            
+            if guild_id in guild_cache:
                 
-                try:
-                    server = JavaServer(ip, port, 4)
-                    status = await server.async_status()
-                    player_count = status.players.online
-                
-                except Exception as e: 
-                    await channel.send(f"> **ERROR:** The provided server is not responding to status requests!\n> Here's some info to help...\n> IP: {ip}, Port: {port}")
-                    return
-                #player_count = info["players"]["online"]
-                current = {guild_id: [player_count]}
-                
-                if guild_id in guild_cache:
-                    
-                    if player_count != guild_cache[guild_id][0]:
+                if player_count != guild_cache[guild_id][0]:
 
-                        if player_count > guild_cache[guild_id][0]:
-                            
-                            if player_count - guild_cache[guild_id][0] == 1:
-                                await channel.send(f"> A player has **joined** the server! 😁")
-
-                            else:
-                                players = player_count - guild_cache[guild_id][0]
-                                await channel.send(f"> **{players}** players have **joined** the server! 😁")
-
-                        elif player_count < guild_cache[guild_id][0]:
-
-                            if guild_cache[guild_id][0] - player_count == 1:
-                                await channel.send(f"> A player has **left** the server! 😢")
-                            
-                            else:
-                                players = guild_cache[guild_id][0] - player_count
-                                await channel.send(f"> **{players}** players have **left** the server! 😢")
+                    if player_count > guild_cache[guild_id][0]:
                         
-                        guild_cache.update(current)
+                        if player_count - guild_cache[guild_id][0] == 1:
+                            await channel.send(f"> A player has **joined** the server! 😁")
 
-                else:
+                        else:
+                            players = player_count - guild_cache[guild_id][0]
+                            await channel.send(f"> **{players}** players have **joined** the server! 😁")
+
+                    elif player_count < guild_cache[guild_id][0]:
+
+                        if guild_cache[guild_id][0] - player_count == 1:
+                            await channel.send(f"> A player has **left** the server! 😢")
+                        
+                        else:
+                            players = guild_cache[guild_id][0] - player_count
+                            await channel.send(f"> **{players}** players have **left** the server! 😢")
+                    
                     guild_cache.update(current)
 
-        except Exception as error: 
-            print(f"[Tasks] Uh oh something went wrong with tracking: {error}, Line #: {sys.exc_info()[-1].tb_lineno}, Guild: {guild_id}")
-    
+            else:
+                guild_cache.update(current)
     @tasks.loop(seconds=60.0)
     async def status(self):
-        
         choice=random.randint(1,4)
         
         if choice == 1:
@@ -134,21 +132,21 @@ class tasksCog(commands.Cog):
         await self.bot.wait_until_ready()
     @tick.error
     async def tickerror(self, error):
-        print(f"[Tick]: Error in tick task: {error}, Line #: {sys.exc_info()[-1].tb_lineno}")
+        error_logger.log("Tick", error, sys.exc_info()[-1])
     
     @track.before_loop
     async def before_track(self):
         await self.bot.wait_until_ready()
     @track.error
     async def trackerror(self, error):
-        print(f"[track]: Error in track task: {error}, Line #: {sys.exc_info()[-1].tb_lineno}")
+        error_logger.log("Tracking", error, sys.exc_info()[-1])
     
     @status.before_loop
     async def before_status(self):
         await self.bot.wait_until_ready()
     @status.error
     async def statuserror(self, error):
-        print(f"[Status]: Error in status task: {error}, Line #: {sys.exc_info()[-1].tb_lineno}")
+        error_logger.log("Status", error, sys.exc_info()[-1])
 
 def setup(bot):
     print("[Tasks] Loading extension...")

@@ -1,4 +1,5 @@
 import discord, requests, json, geocoder, os, socket, sys, io
+import src.utilities as utilities
 from discord.commands import slash_command
 from discord.ext import commands
 from discord.commands import Option
@@ -93,28 +94,22 @@ class General(commands.Cog):
             status = await server.async_status()
 
         except:
-            embed=discord.Embed(title=f"Error {ip}", description="This server either does not exist or is not online. If you think this is an error, then please join the support server to report this!", color=0xff1a1a)
-            await ctx.respond(embed=embed)
+            await ctx.respond(embed=utilities.unreachable_server(ip))
             return
         
         #get motd
-        mc_codes = ["§0", "§1", "§2", "§3", "§4", "§5", "§6", "§7", "§8", "§9", "§a", "§b", "§c", "§d", "§e", "§f","§g", "§l", "§n"]
+        mc_codes = ["§0", "§1", "§2", "§3", "§4", "§5", "§6", "§7", "§8", "§9", "§a", "§b", "§c", "§d", "§e", "§f","§g", "§l", "§n", "§k"]
         motd = status.description
         
         for code in mc_codes:
             motd = motd.replace(code, "")
+        motd = motd.replace(" ", "‎ ")
+        print(motd)
 
-        embed=discord.Embed(title=f"Status of {ip}", description=f"{motd}",color=color)
+        embed=discord.Embed(title=f"✅ {ip}", description=f"**{motd}**",color=color)
         embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
         
-        try:
-            ip_addr = socket.gethostbyname(ip)
-            embed.add_field(name="IP: ", value=f"`{ip_addr}`")
-        except: pass
-        
-        embed.add_field(name="Player Count:", value=f"`{status.players.online}`", inline=True)
-        
-        embed.add_field(name="Version:", value=f"`{status.version.name}`", inline=True)
+        embed.add_field(name="Player Count:", value=f"`{status.players.online}/{status.players.max}`", inline=False)
         
         if status.players.sample != None and status.players.sample != []:
             player_list=""
@@ -123,6 +118,13 @@ class General(commands.Cog):
                 player_list += player.name.replace(".", "")+", "
             
             embed.add_field(name="Player list:", value=f"`{player_list[:-2]}`", inline=False)
+
+        try:
+            ip_addr = socket.gethostbyname(ip)
+            embed.add_field(name="IP: ", value=f"`{ip_addr}`")
+        except: pass
+        
+        embed.add_field(name="Version:", value=f"`{status.version.name}`", inline=True)
         
         await ctx.respond(embed=embed)
     @status.error
