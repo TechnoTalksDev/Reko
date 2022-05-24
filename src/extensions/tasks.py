@@ -24,6 +24,13 @@ def mongo_init():
     tracking_coll = db.tracking
     return tracking_coll
 
+def mongo_init_bot_stats():
+    mongo_password=os.getenv("MONGO_PASSWORD")
+    cluster = motor.motor_asyncio.AsyncIOMotorClient("mongodb+srv://TechnoTalks:"+mongo_password+"@main.rpbbi.mongodb.net/reko?retryWrites=true&w=majority")
+    db = cluster.reko
+    botstats_coll = db.botstats
+    return botstats_coll
+
 color=0x6bf414
 
 guild_cache = {
@@ -41,12 +48,14 @@ class tasksCog(commands.Cog):
         self.tick.start()
         self.track.start()
         self.status.start()
+        self.bot_stats.start()
 
     def cog_unload(self):
         #cancel tasks on cog unload
         self.tick.cancel()
         self.track.cancel()
         self.status.cancel()
+        self.bot_stats.cancel()
     #Looped Tasks
     @tasks.loop(seconds=30.0)
     async def tick(self):
@@ -55,7 +64,7 @@ class tasksCog(commands.Cog):
         print("\n[Reko] {"+datetime.datetime.now().strftime("%H:%M:%S")+"} Tick: "+tick+f" {round(self.bot.latency * 1000)}ms")
 
         self.index += 1
-        
+    #player tracking   
     @tasks.loop(seconds=5.0)
     async def track(self):
         coll = mongo_init()
@@ -63,13 +72,14 @@ class tasksCog(commands.Cog):
         docs = await cursor.to_list(length=None)
 
         for guild in docs:
-            guild_id = guild["_id"]
-            ip = guild["trackip"]
-            port = guild["trackport"]
-            channel_id = guild["trackchannel"]
-
-            channel =  self.bot.get_channel(channel_id)
-
+            try:
+                guild_id = guild["_id"]
+                ip = guild["trackip"]
+                port = guild["trackport"]
+                channel_id = guild["trackchannel"]
+                channel =  self.bot.get_channel(channel_id)
+            except:
+                continue
             if channel == None:
                 return
             #print(f"[Tasks] (Debug) IP:{ip}, Port: {port}, Port Type: {type(port)} ")
@@ -81,7 +91,7 @@ class tasksCog(commands.Cog):
             
             except Exception as e: 
                 await channel.send(embed=utilities.error_message())
-                return
+                continue
             #player_count = info["players"]["online"]
             current = {guild_id: [player_count]}
             
@@ -111,6 +121,7 @@ class tasksCog(commands.Cog):
 
             else:
                 guild_cache.update(current)
+    #status
     @tasks.loop(seconds=60.0)
     async def status(self):
         choice=random.randint(1,4)
@@ -126,7 +137,18 @@ class tasksCog(commands.Cog):
         
         else:
             await self.bot.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name="Minecraft"))
-    #Make sure to wait before bot start to begin looping tasks
+   
+    #Push bot stats to mongodb
+    @tasks.loop(seconds=30.0)
+    async def bot_stats(self):
+        coll = mongo_init_bot_stats()
+        findguild= await coll.find_one({"_id": self.bot.application_id})
+        
+        if findguild:
+            await coll.delete_many(findguild)
+        
+        await coll.insert_one({"_id": self.bot.application_id, "guild_count": len(self.bot.guilds), "users": len(self.bot.users), "commands_run": "Unknown"})
+    
     @tick.before_loop
     async def before_tick(self):
         await self.bot.wait_until_ready()
@@ -147,6 +169,13 @@ class tasksCog(commands.Cog):
     @status.error
     async def statuserror(self, error):
         error_logger.log("Status", error, sys.exc_info()[-1])
+
+    @bot_stats.before_loop
+    async def before_bot_stats(self):
+        await self.bot.wait_until_ready()
+    @bot_stats.error
+    async def bot_statuserror(self, error):
+        error_logger.log("Bot Stats", error, sys.exc_info()[-1])
 
 def setup(bot):
     print("[Tasks] Loading extension...")

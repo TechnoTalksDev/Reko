@@ -48,7 +48,7 @@ async def ping(ctx):
     embed.set_thumbnail(url="https://www.technotalks.net/static/main/images/Reko_Circular-removebg-preview.png")
     embed.add_field(name="Ping",value=f"`{round(bot.latency * 1000)}ms`",inline=True)
     embed.add_field(name="Uptime", value=f"`{uptime}`", inline=True)
-    embed.add_field(name="Servers", value=f"`{len(bot.guilds)}`", inline=True)
+    embed.add_field(name="Guilds", value=f"`{len(bot.guilds)}`", inline=True)
     embed.add_field(name="Version", value=f"`{version}`", inline=True)
     embed.add_field(name="RAM", value=f"`{bytes2human(process.memory_info().rss)} used`", inline=True)
     await ctx.respond(embed=embed)
