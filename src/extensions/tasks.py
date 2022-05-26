@@ -12,27 +12,15 @@ from mcstatus import JavaServer
 #intialize error_logger & error_message
 error_logger = utilities.ErrorLogger("Tasks")
 
-#mongodb setup
-try:
-    load_dotenv("src\secrets\.env")
-except: pass
+#intialize mongodb
+db = utilities.Mongo().db
 
-def mongo_init():
-    mongo_password=os.getenv("MONGO_PASSWORD")
-    cluster = motor.motor_asyncio.AsyncIOMotorClient("mongodb+srv://TechnoTalks:"+mongo_password+"@main.rpbbi.mongodb.net/reko?retryWrites=true&w=majority")
-    db = cluster.reko
-    tracking_coll = db.tracking
-    return tracking_coll
+tracking_coll = db.tracking
 
-def mongo_init_bot_stats():
-    mongo_password=os.getenv("MONGO_PASSWORD")
-    cluster = motor.motor_asyncio.AsyncIOMotorClient("mongodb+srv://TechnoTalks:"+mongo_password+"@main.rpbbi.mongodb.net/reko?retryWrites=true&w=majority")
-    db = cluster.reko
-    botstats_coll = db.botstats
-    return botstats_coll
-
+botstats_coll = db.botstats
+#bot accent color
 color=0x6bf414
-
+#cache for tracking
 guild_cache = {
     "Example": [datetime.datetime.now, ["TechnoTalks, garvinator123"]]
 }
@@ -67,7 +55,7 @@ class tasksCog(commands.Cog):
     #player tracking   
     @tasks.loop(seconds=5.0)
     async def track(self):
-        coll = mongo_init()
+        coll = tracking_coll
         cursor = coll.find().sort([('_id', 1)])
         docs = await cursor.to_list(length=None)
 
@@ -141,7 +129,7 @@ class tasksCog(commands.Cog):
     #Push bot stats to mongodb
     @tasks.loop(seconds=30.0)
     async def bot_stats(self):
-        coll = mongo_init_bot_stats()
+        coll = botstats_coll
         findguild= await coll.find_one({"_id": self.bot.application_id})
         
         if findguild:
@@ -155,6 +143,7 @@ class tasksCog(commands.Cog):
     @tick.error
     async def tickerror(self, error):
         error_logger.log("Tick", error, sys.exc_info()[-1])
+        return
     
     @track.before_loop
     async def before_track(self):
@@ -162,6 +151,7 @@ class tasksCog(commands.Cog):
     @track.error
     async def trackerror(self, error):
         error_logger.log("Tracking", error, sys.exc_info()[-1])
+        return
     
     @status.before_loop
     async def before_status(self):
@@ -169,6 +159,7 @@ class tasksCog(commands.Cog):
     @status.error
     async def statuserror(self, error):
         error_logger.log("Status", error, sys.exc_info()[-1])
+        return
 
     @bot_stats.before_loop
     async def before_bot_stats(self):
@@ -176,6 +167,7 @@ class tasksCog(commands.Cog):
     @bot_stats.error
     async def bot_statuserror(self, error):
         error_logger.log("Bot Stats", error, sys.exc_info()[-1])
+        return
 
 def setup(bot):
     print("[Tasks] Loading extension...")

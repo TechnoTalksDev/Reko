@@ -1,4 +1,4 @@
-import discord, json, requests, motor, motor.motor_asyncio, os, socket
+import discord, json, requests, motor, motor.motor_asyncio, os, socket, sys
 import src.utilities as utilities
 from pkg_resources import require
 from discord.commands import slash_command , Option
@@ -7,19 +7,17 @@ from discord.ui import Button, View
 from discord.ext.commands import MissingPermissions
 from dotenv import load_dotenv
 from mcstatus import JavaServer
-#mongodb setup
-try:
-    load_dotenv("src\secrets\.env")
-except: pass
-mongo_password=os.getenv("MONGO_PASSWORD")
-cluster = motor.motor_asyncio.AsyncIOMotorClient("mongodb+srv://TechnoTalks:"+mongo_password+"@main.rpbbi.mongodb.net/reko?retryWrites=true&w=majority")
-db = cluster.reko
+#error logger
+error_logger = utilities.ErrorLogger("Custom Commands")
+#intialize mongodb
+db = utilities.Mongo().db
+
 hotkey_coll = db.hotkey
 tracking_coll = db.tracking
 uc_coll = db.uc
 
+#accent color
 color=0x6bf414
-
 
 class resetView(View):
     def __init__(self, data, ctx, value):
@@ -164,20 +162,22 @@ class Custom(commands.Cog):
         if isinstance(error, MissingPermissions):
             await ctx.respond(f"You are missing the required permission: **{error.missing_permissions[0].capitalize()}**, to run this command!")
         else:
+            error_logger.log("Setup Command", error, sys.exc_info()[-1])
             await ctx.respond(embed=utilities.error_message())
-            raise error
+
     @slash_command(description="Gets status of hotkeyed server!")
     async def server(self, ctx):
+        await ctx.defer()
+
         inputid=ctx.guild_id
         #sip=read_json(inputid)
-        findguild=await hotkey_coll.find_one({"_id":inputid})
+        findguild = await hotkey_coll.find_one({"_id":inputid})
 
         if not findguild:
            await ctx.respond("This command has **not been setup properly** please ask the __admins/mods__ to run **/setup** to setup this command!")    
         else:
             try:
                 ip=findguild["mcip"]
-                await ctx.defer()
                 try:
                     server = JavaServer.lookup(ip, 3)
                     status = await server.async_status()
@@ -209,8 +209,10 @@ class Custom(commands.Cog):
 
     @server.error
     async def servererror(self, ctx, error):
-        await ctx.respond(embed=utilities.error_message())
+        error_logger.log("Server Command", error, sys.exc_info()[-1])
         raise error
+        await ctx.respond(embed=utilities.error_message())
+        
 def setup(bot):
     print("[Custom] Loading extension...")
     bot.add_cog(Custom(bot))

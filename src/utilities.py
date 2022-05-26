@@ -1,8 +1,13 @@
 from inspect import Traceback
-import colorama, discord
+import colorama, discord, motor, asyncio, os, motor.motor_asyncio
 from colorama import Fore
+from dotenv import load_dotenv
 
 colorama.init(True)
+
+try:
+    load_dotenv("src\secrets\.env")
+except: pass
 
 class ErrorLogger():
     def __init__(self, category = str, defaultMessage = "Uh oh, something went wrong"):
@@ -27,3 +32,18 @@ def unreachable_server(ip):
     embed.add_field(name = "Please try again", value = "If you think this is an error and, if the issue continues, **please report this** in our **[support server](https://discord.com/invite/8vNHAA36fR)**!", inline=False)
     return embed
 
+class Mongo():
+    def __init__(self):
+        mongo_link=os.getenv("MONGO_LINK")
+        
+        cluster = motor.motor_asyncio.AsyncIOMotorClient(mongo_link, connect=True, serverSelectionTimeoutMS=5000, connectTimeoutMS=5000)
+
+        self.db = cluster.reko
+
+    def get_collection(self, collection_name:str):
+        try: 
+            coll = self.db[collection_name]
+            return coll
+        except:
+            return None
+    
