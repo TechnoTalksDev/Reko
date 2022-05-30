@@ -1,3 +1,4 @@
+from click import help_option
 import discord, datetime, time, os, psutil, sys
 import src.utilities as utilities
 from discord.ext import commands
@@ -6,6 +7,7 @@ from psutil._common import bytes2human
 from colorama import init, Fore
 #bot client
 activity = discord.Activity(type=discord.ActivityType.watching, name="Minecraft Servers")
+#bot = discord.Bot(activity=activity, debug_guilds=[846192394214965268])
 bot = discord.Bot(activity=activity)
 #intializing error logger
 error_logger=utilities.ErrorLogger("Reko")
@@ -49,6 +51,10 @@ async def ping(ctx):
     embed.add_field(name="Ping",value=f"`{round(bot.latency * 1000)}ms`",inline=True)
     embed.add_field(name="Uptime", value=f"`{uptime}`", inline=True)
     embed.add_field(name="Guilds", value=f"`{len(bot.guilds)}`", inline=True)
+    users = 0
+    for guild in bot.guilds:
+        users += guild.member_count
+    embed.add_field(name="Users", value=f"`{users}`", inline=True)
     embed.add_field(name="Version", value=f"`{version}`", inline=True)
     embed.add_field(name="RAM", value=f"`{bytes2human(process.memory_info().rss)} used`", inline=True)
     await ctx.respond(embed=embed)
@@ -76,13 +82,15 @@ async def on_guild_join(guild):
 @bot.slash_command(description="Reloads extensions.", guild_ids=[846192394214965268])
 @commands.is_owner()
 async def reload(ctx):
+    await bot.sync_commands()
     bot.reload_extension("extensions.static")
     bot.reload_extension("extensions.dc")
     bot.reload_extension("extensions.tasks")
+    await bot.sync_commands()
     await ctx.respond("Reloaded cog's and extensions.")
 @reload.error
 async def reloaderror(ctx, error):
-    await ctx.respond(embed=utilities.error_message())
+    await ctx.respond(embed=utilities.ErrorMessage.error_message())
     if error == discord.ext.commands.errors.NotOwner or error == "You do not own this bot.":
         return
     #print(f"[Reload] Error with reloading the bot: {error}, Line #: {sys.exc_info()[-1].tb_lineno}")
@@ -98,7 +106,7 @@ async def kill(ctx):
     await bot.close()
 @kill.error
 async def killerror(ctx, error):
-    await ctx.respond(embed=utilities.error_message())
+    await ctx.respond(embed=utilities.ErrorMessage.error_message())
     if error == "You do not own this bot.":
         return
     error_logger.log("Kill Command", error, sys.exc_info()[-1])

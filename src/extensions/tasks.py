@@ -78,7 +78,8 @@ class tasksCog(commands.Cog):
                 player_count = status.players.online
             
             except Exception as e: 
-                await channel.send(embed=utilities.error_message())
+                await channel.send(embed=utilities.ErrorMessage.error_message())
+                error_logger.log("Player Tracking", e, sys.exc_info()[-1], "Failed to connect to server")
                 continue
             #player_count = info["players"]["online"]
             current = {guild_id: [player_count]}

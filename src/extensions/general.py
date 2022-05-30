@@ -6,6 +6,8 @@ from discord.commands import Option
 from mcstatus import JavaServer
 from staticmap import StaticMap, CircleMarker
 #from main import guilds
+#intialize error logger
+error_logger = utilities.ErrorLogger("General")
 #color of bot
 color=0x6bf414
 #function to get server latency
@@ -60,9 +62,10 @@ class General(commands.Cog):
     @help.error
     async def help_error(self, ctx, error):
         #tell the user their was an error
-        await ctx.respond("> **Something went wrong...** 😭 Please try again!")
+        await ctx.respond(embed=utilities.ErrorMessage.error_message())
         #log the error and line number
-        print(f"[General] Help command error: {error}, Line #: {sys.exc_info()[-1].tb_lineno}")
+        error_logger.log("Help Command", error, sys.exc_info()[-1])
+
     #dev command self advertising go brrr
     @slash_command(description="Information about the developer!")
     async def dev(self, ctx):
@@ -81,9 +84,9 @@ class General(commands.Cog):
     @dev.error
     async def dev_error(self, ctx, error):
         #tell the user their was an error
-        await ctx.respond("> **Something went wrong...** 😭 Please try again!")
+        await ctx.respond(embed=utilities.ErrorMessage.error_message())
         #log the error and line number
-        print(f"[General] Dev command error: {error}, Line #: {sys.exc_info()[-1].tb_lineno}")
+        error_logger.log("Dev Command", error, sys.exc_info()[-1])
     #status command
     @slash_command(description= "Get the Status of any Minecraft Server.")
     async def status(self, ctx, ip: Option(str, "The ip of the server.", required=True)):
@@ -94,7 +97,7 @@ class General(commands.Cog):
             status = await server.async_status()
 
         except:
-            await ctx.respond(embed=utilities.unreachable_server(ip))
+            await ctx.respond(embed=utilities.ErrorMessage.unreachable_server(ip))
             return
         
         #get motd
@@ -104,7 +107,6 @@ class General(commands.Cog):
         for code in mc_codes:
             motd = motd.replace(code, "")
         motd = motd.replace(" ", "‎ ")
-        print(motd)
 
         embed=discord.Embed(title=f"✅ {ip}", description=f"**{motd}**",color=color)
         embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
@@ -130,9 +132,9 @@ class General(commands.Cog):
     @status.error
     async def statuserror(self, ctx, error):
         #tell the user their was an error
-        await ctx.respond("> **Something went wrong...** 😭 Please make sure the server IP is correct. ")
+        await ctx.respond(embed=utilities.ErrorMessage.error_message())
         #log the error and line number
-        print(f"[General] Status command error: {error}, Line #: {sys.exc_info()[-1].tb_lineno}")
+        error_logger.log("Status Command", error, sys.exc_info()[-1])
 
     @slash_command(description="Get the latency to a Minecraft Server.")
     async def latency(self, ctx: discord.ApplicationContext, ip: Option(str, "IP of the MC server", required=True)):
@@ -141,9 +143,7 @@ class General(commands.Cog):
         result= await latencyraw(ip)
         
         if result == None:
-            embed=discord.Embed(title="Error", description="This server does not exist or is offline", color=0xff1a1a)
-            
-            await ctx.respond(embed=embed)
+            await ctx.respond(embed=utilities.ErrorMessage.unreachable_server(ip))
         
         else:
             embed=discord.Embed(title=f"Latency to {ip}", description=f"{result}"+"ms", color=color)
@@ -156,9 +156,9 @@ class General(commands.Cog):
     @latency.error
     async def latencyerror(self, ctx, error):
         #tell the user their was an error
-        await ctx.respond("> **Something went wrong...** 😭 Please make sure the server IP is correct. ")
+        await ctx.respond(embed=utilities.ErrorMessage.error_message())
         #log the error and line number
-        print(f"[General] Latency command error: {error}, Line #: {sys.exc_info()[-1].tb_lineno}")
+        error_logger.log("Latency Command", error, sys.exc_info()[-1])
     
     @slash_command(description="Get the aproximate location of a server!")
     async def location(self, ctx, ip: Option(str, "IP of the desired server", required=True)):
@@ -189,9 +189,9 @@ class General(commands.Cog):
     @location.error
     async def locationerror(self, ctx, error):
         #tell the user their was an error
-        await ctx.respond("> **Something went wrong...** 😭 Please make sure the server IP is correct. ")
+        await ctx.respond(embed=utilities.ErrorMessage.error_message())
         #log the error and line number
-        print(f"[General] Location command error: {error}, Line #: {sys.exc_info()[-1].tb_lineno}")
+        error_logger.log("Location Command", error, sys.exc_info()[-1])
     
 def setup(bot):
     print("[General] Loading extension...")

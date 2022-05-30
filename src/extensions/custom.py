@@ -19,6 +19,11 @@ uc_coll = db.uc
 #accent color
 color=0x6bf414
 
+features = [
+    {"name": "player_tracking", "friendly_name": "Tracking", "db": tracking_coll, "description": "**Track player joins and leaves** of your set server! (Player names coming soon!)"}, 
+    {"name": "server_command", "friendly_name": "/server", "db": hotkey_coll, "description": "Easily check the status of the set server **without having to manually type the ip** every time!"},
+    {"name": "uc", "friendly_name": "Updating Chart", "db": uc_coll, "description": "**Coming Soon!**"}]
+
 class resetView(View):
     def __init__(self, data, ctx, value):
         super().__init__(timeout=15)
@@ -28,12 +33,13 @@ class resetView(View):
     
     @discord.ui.button(label="Reset", style=discord.ButtonStyle.danger, emoji="<:reset:941872105618812978>")
     async def reset_button_callback(self, button, interaction):
-        if self.value == "track":
+        if self.value == "Tracking":
             await tracking_coll.delete_many(self.data)
         elif self.value == "/server":
             await hotkey_coll.delete_many(self.data)
         else:
             print("[Custom] Stored Feature Data NOT RECOGNIZED")
+            print(self.value)
         await interaction.response.edit_message(content="Previously stored configuration cleared! Please run the setup command again...", view=None)
     async def reset_on_timeout(self):
         for child in self.children:
@@ -62,7 +68,7 @@ class setupModal(discord.ui.Modal):
                 await hotkey_coll.insert_one({"_id":sid, "mcip": self.children[0].value})
                 await interaction.response.send_message("The server command is setup!")
             else:
-                view=resetView(findguild, self.ctx)
+                view=resetView(findguild, self.ctx, self.feature)
                 await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature. (*Dismiss this message to cancel*)", view=view)
         elif self.feature == "Tracking":
             findguild= await tracking_coll.find_one({"_id": sid})
@@ -75,34 +81,25 @@ class setupModal(discord.ui.Modal):
                 except AttributeError:
                     await interaction.response.send_message("> Please provide a **valid channel name**! 😭\n> *(Valid channel names do not include the # ex. 'tracking' NOT '#tracking')*")
             else:
-                view=resetView(findguild, self.ctx, "track")
+                view=resetView(findguild, self.ctx, self.feature)
                 await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature. (*Dismiss this message to cancel*)", view=view)
+        else:
+            await interaction.response.send_message(embed=utilities.ErrorMessage.error_message())
         
-
 class setupView(View):
+    options = []
+    for feature in features:
+        options.append(discord.SelectOption(label=feature["friendly_name"], description=feature["description"].replace("*", "")))
+    
     def __init__(self, ctx):
         super().__init__(timeout=15)
         self.ctx=ctx
         self.feature = None
-
     @discord.ui.select( 
         placeholder = "Choose a feature to setup!", #
         min_values = 1, 
         max_values = 1, 
-        options = [ 
-            discord.SelectOption(
-                label="/server",
-                description="Easily get the status of this server"
-            ),
-            discord.SelectOption(
-                label="Tracking",
-                description="Track joins and leaves of a server"
-            ),
-            discord.SelectOption(
-                label="Updating chart",
-                description="View an chart of your selected server"
-            )
-        ]
+        options = options
     )
     async def select_callback(self, select, interaction): # the function called when the user is done selecting options
         await interaction.response.defer()
@@ -117,7 +114,7 @@ class setupView(View):
                 if self.feature == "/server":
                     findguild= await hotkey_coll.find_one({"_id": interaction.guild_id})
                     if findguild:
-                        view=resetView(findguild, self.ctx, "/server")
+                        view=resetView(findguild, self.ctx, self.feature)
                         await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature. (*Dismiss this message to cancel*)", view=view, ephemeral=True)
                     else:
                         button.disabled = True
@@ -126,7 +123,7 @@ class setupView(View):
                 elif self.feature == "Tracking":
                     findguild= await tracking_coll.find_one({"_id": interaction.guild_id})
                     if findguild:
-                        view=resetView(findguild, self.ctx, "track")
+                        view=resetView(findguild, self.ctx, self.feature)
                         await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature. (*Dismiss this message to cancel*)", view=view, ephemeral=True)
                     else:
                         button.disabled = True
@@ -151,9 +148,10 @@ class Custom(commands.Cog):
         embed=discord.Embed(title="Setup up Reko for your server! ", description="Please select the feature you would like to setup with the **select menu** and then hit the **green setup button** to set it up for your server!", color=color)
         embed.set_thumbnail(url="https://www.technotalks.net/static/main/images/Reko_Circular-removebg-preview.png")
         embed.set_author(name=f"Customizable features of Reko")
-        embed.add_field(name="/server ", value="This command allows users to easily check the status of the set server **without having to manually type the ip** every time!", inline=True)
-        embed.add_field(name="Tracking", value="**Track player joins and leaves** of your set server! (Player names coming soon!)", inline=False)
-        embed.add_field(name="Updating Chart", value="**Coming Soon!**", inline=False)
+        
+        for feature in features:
+            embed.add_field(name="__"+feature["friendly_name"]+"__", value=feature["description"], inline=False)
+        
         embed.add_field(name="\u200B", value="Please report bugs in the [support server](https://discord.gg/8vNHAA36fR)! It really helps the bot grow!")
         view=setupView(ctx)
         await ctx.respond(embed=embed, view=view)
@@ -163,7 +161,7 @@ class Custom(commands.Cog):
             await ctx.respond(f"You are missing the required permission: **{error.missing_permissions[0].capitalize()}**, to run this command!")
         else:
             error_logger.log("Setup Command", error, sys.exc_info()[-1])
-            await ctx.respond(embed=utilities.error_message())
+            await ctx.respond(embed=utilities.ErrorMessage.error_message())
 
     @slash_command(description="Gets status of hotkeyed server!")
     async def server(self, ctx):
@@ -210,8 +208,8 @@ class Custom(commands.Cog):
     @server.error
     async def servererror(self, ctx, error):
         error_logger.log("Server Command", error, sys.exc_info()[-1])
+        await ctx.respond(embed=utilities.ErrorMessage.error_message())
         raise error
-        await ctx.respond(embed=utilities.error_message())
         
 def setup(bot):
     print("[Custom] Loading extension...")
