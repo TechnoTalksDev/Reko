@@ -183,10 +183,7 @@ class Custom(commands.Cog):
                     await ctx.respond(embed=utilities.unreachable_server(ip))
                     return
                 #get motd
-                mc_codes = ["§0", "§1", "§2", "§3", "§4", "§5", "§6", "§7", "§8", "§9", "§a", "§b", "§c", "§d", "§e", "§f","§g", "§l", "§n"]
-                motd = status.description
-                for code in mc_codes:
-                    motd = motd.replace(code, "")
+                motd = utilities.StatusCore.motd_cleanser(status.description)
 
                 embed=discord.Embed(title=f"Status of {ip}", description=f"{motd}",color=color)
                 embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")

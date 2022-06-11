@@ -13,11 +13,9 @@ except Exception as e:
 from dotenv import load_dotenv
 
 #Load Token
-try: 
-    load_dotenv("src\secrets\.env")
-except: 
-    pass
+load_dotenv("src/secrets/.env")
 token = os.getenv("TOKEN")
+
 #Run bot
 if __name__ == "__main__":
     try: 

@@ -95,18 +95,12 @@ class General(commands.Cog):
         try:
             server = JavaServer.lookup(ip, 3)
             status = await server.async_status()
-
         except:
             await ctx.respond(embed=utilities.ErrorMessage.unreachable_server(ip))
             return
         
         #get motd
-        mc_codes = ["§0", "§1", "§2", "§3", "§4", "§5", "§6", "§7", "§8", "§9", "§a", "§b", "§c", "§d", "§e", "§f","§g", "§l", "§n", "§k"]
-        motd = status.description
-        
-        for code in mc_codes:
-            motd = motd.replace(code, "")
-        motd = motd.replace(" ", "‎ ")
+        motd = utilities.StatusCore.motd_cleanser(status.description)
 
         embed=discord.Embed(title=f"✅ {ip}", description=f"**{motd}**",color=color)
         embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
