@@ -62,7 +62,7 @@ class General(commands.Cog):
     @help.error
     async def help_error(self, ctx, error):
         #tell the user their was an error
-        await ctx.respond(embed=utilities.ErrorMessage.error_message())
+        await ctx.respond(embed=utilities.ErrorMessage.default())
         #log the error and line number
         error_logger.log("Help Command", error, sys.exc_info()[-1])
 
@@ -84,7 +84,7 @@ class General(commands.Cog):
     @dev.error
     async def dev_error(self, ctx, error):
         #tell the user their was an error
-        await ctx.respond(embed=utilities.ErrorMessage.error_message())
+        await ctx.respond(embed=utilities.ErrorMessage.default())
         #log the error and line number
         error_logger.log("Dev Command", error, sys.exc_info()[-1])
     #status command
@@ -126,7 +126,7 @@ class General(commands.Cog):
     @status.error
     async def statuserror(self, ctx, error):
         #tell the user their was an error
-        await ctx.respond(embed=utilities.ErrorMessage.error_message())
+        await ctx.respond(embed=utilities.ErrorMessage.default())
         #log the error and line number
         error_logger.log("Status Command", error, sys.exc_info()[-1])
 
@@ -150,7 +150,7 @@ class General(commands.Cog):
     @latency.error
     async def latencyerror(self, ctx, error):
         #tell the user their was an error
-        await ctx.respond(embed=utilities.ErrorMessage.error_message())
+        await ctx.respond(embed=utilities.ErrorMessage.default())
         #log the error and line number
         error_logger.log("Latency Command", error, sys.exc_info()[-1])
     
@@ -159,10 +159,17 @@ class General(commands.Cog):
         await ctx.defer()
         
         #get ip of the server
-        raw_ip = socket.gethostbyname(ip)
-        
+        try:
+            raw_ip = socket.gethostbyname(ip)
+        except:
+            await ctx.respond(embed=utilities.ErrorMessage.unreachable_server(ip))
+            return
         #generate map and store coords and image file
-        map = get_map(raw_ip)
+        try:
+            map = get_map(raw_ip)
+        except:
+            await ctx.respond(embed=utilities.ErrorMessage.unreachable_server(ip))
+
         coords = map[0]
         image = map[1]
         #create embed
@@ -183,7 +190,7 @@ class General(commands.Cog):
     @location.error
     async def locationerror(self, ctx, error):
         #tell the user their was an error
-        await ctx.respond(embed=utilities.ErrorMessage.error_message())
+        await ctx.respond(embed=utilities.ErrorMessage.default())
         #log the error and line number
         error_logger.log("Location Command", error, sys.exc_info()[-1])
     

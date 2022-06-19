@@ -1,11 +1,13 @@
 from inspect import Traceback
-import colorama, discord, motor, asyncio, os, motor.motor_asyncio
+import colorama, discord, motor, asyncio, os, motor.motor_asyncio, socket
 from colorama import Fore
 from dotenv import load_dotenv
 
 colorama.init(True)
 
 load_dotenv("src/secrets/.env")
+
+color = 0x6bf414
 
 class ErrorLogger():
     def __init__(self, category = str, defaultMessage = "Uh oh, something went wrong"):
@@ -57,4 +59,26 @@ class StatusCore():
 
         return motd
 
-    #def default(status, query, motd = True, count = True, list = True, ip = True, version = True):
+    def default(status, motd = True, count = True, list = True, ip = True, version = True):
+        motd = StatusCore.motd_cleanser(status.description)
+
+        embed=discord.Embed(title=f"✅ {ip}", description=f"**{motd}**",color=color)
+
+        embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
+        
+        embed.add_field(name="Player Count:", value=f"`{status.players.online}/{status.players.max}`", inline=False)
+        
+        if status.players.sample != None and status.players.sample != []:
+            player_list=""
+            
+            for player in status.players.sample:
+                player_list += player.name.replace(".", "")+", "
+            
+            embed.add_field(name="Player list:", value=f"`{player_list[:-2]}`", inline=False)
+
+        try:
+            ip_addr = socket.gethostbyname(ip)
+            embed.add_field(name="IP: ", value=f"`{ip_addr}`")
+        except: pass
+        
+        embed.add_field(name="Version:", value=f"`{status.version.name}`", inline=True)
