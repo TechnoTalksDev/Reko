@@ -16,6 +16,8 @@
   <img src="https://img.shields.io/github/last-commit/technotalksdev/reko">
 </p>
 
+> Currently on vacation updates will commence afterward!
+
 ## Key Features
 - Get **player count**, **online players** (To-Do), **server version**, and **motd**
 - Get **latency** to server (ping from bot to server)
