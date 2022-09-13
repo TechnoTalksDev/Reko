@@ -9,14 +9,6 @@ load_dotenv("src/secrets/.env")
 
 color = 0x6bf414
 
-class ErrorLogger():
-    def __init__(self, category = str, defaultMessage = "Uh oh, something went wrong"):
-        self.category = category
-        self.defaultMessage = defaultMessage
-
-    def log(self, feature=None ,error=Exception, tracebackObject=Traceback, additionalContext = None):
-        print(f"[{self.category}] {Fore.RED}{self.defaultMessage} {Fore.RESET}-> {Fore.BLUE}{feature} {Fore.RESET}| {Fore.BLACK}Error: {Fore.RED}{error} {Fore.RESET}| {Fore.LIGHTGREEN_EX}Line #: {Fore.RESET}{tracebackObject.tb_lineno} | {Fore.CYAN}Info: {additionalContext}")
-
 class ErrorMessage():
     def default():
         defaultMessage = "If the issue continues, **please report this** in our **[support server](https://discord.com/invite/8vNHAA36fR)**!"

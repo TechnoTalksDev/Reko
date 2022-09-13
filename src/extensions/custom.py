@@ -1,4 +1,4 @@
-import discord, json, requests, motor, motor.motor_asyncio, os, socket, sys
+import discord, json, requests, motor, motor.motor_asyncio, os, socket, sys, coloredlogs, logging, traceback
 import src.utilities as utilities
 from pkg_resources import require
 from discord.commands import slash_command , Option
@@ -8,7 +8,12 @@ from discord.ext.commands import MissingPermissions
 from dotenv import load_dotenv
 from mcstatus import JavaServer
 #error logger
-error_logger = utilities.ErrorLogger("Custom Commands")
+coloredlogs.install(level="INFO", fmt="%(asctime)s %(name)s[%(process)d] %(levelname)s %(message)s")
+logger = logging.getLogger("Reko")
+file_handler = logging.FileHandler("SEVERE.log")
+file_handler.setLevel(logging.ERROR)
+file_handler.setFormatter(logging.Formatter(fmt="%(asctime)s %(name)s[%(process)d] %(levelname)s %(message)s"))
+logger.addHandler(file_handler)
 #intialize mongodb
 db = utilities.Mongo().db
 
@@ -38,8 +43,8 @@ class resetView(View):
         elif self.value == "/server":
             await hotkey_coll.delete_many(self.data)
         else:
-            print("[Custom] Stored Feature Data NOT RECOGNIZED")
-            print(self.value)
+            logger.info("STORED FEATURE DATA NOT RECOGNIZED")
+            logger.info(self.value)
         await interaction.response.edit_message(content="Previously stored configuration cleared! Please run the setup command again...", view=None)
     async def reset_on_timeout(self):
         for child in self.children:
@@ -160,7 +165,8 @@ class Custom(commands.Cog):
         if isinstance(error, MissingPermissions):
             await ctx.respond(f"You are missing the required permission: **{error.missing_permissions[0].capitalize()}**, to run this command!")
         else:
-            error_logger.log("Setup Command", error, sys.exc_info()[-1])
+            logger.error("Error in Status command")
+            logger.error(traceback.format_exc())
             await ctx.respond(embed=utilities.ErrorMessage.error_message())
 
     @slash_command(description="Gets status of hotkeyed server!")
@@ -182,34 +188,47 @@ class Custom(commands.Cog):
                 except:
                     await ctx.respond(embed=utilities.unreachable_server(ip))
                     return
+        
                 #get motd
                 motd = utilities.StatusCore.motd_cleanser(status.description)
-
-                embed=discord.Embed(title=f"Status of {ip}", description=f"{motd}",color=color)
+                
+                embed=discord.Embed(title=f"✅ {ip}", description=f"**{motd}**",color=color)    
                 embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
-                try:
-                    ip_addr = socket.gethostbyname(ip)
-                    embed.add_field(name="IP: ", value=f"`{ip_addr}`")
-                except: pass
-                embed.add_field(name="Player Count:", value=f"`{status.players.online}`", inline=True)
-                embed.add_field(name="Version:", value=f"`{status.version.name}`", inline=True)
+
+                embed.add_field(name="Player Count:", value=f"`{status.players.online}/{status.players.max}`", inline=True)
+                
+                latency_result = status.latency
+                if latency_result != None:
+                    embed.add_field(name="Latency/Ping", value=f"`{round(latency_result, 2)}`", inline=True)
+                
                 if status.players.sample != None and status.players.sample != []:
                     player_list=""
+                    
                     for player in status.players.sample:
                         player_list += player.name.replace(".", "")+", "
-                    embed.add_field(name="Player list:", value=f"`{player_list[:-2]}`", inline=False)
+                    
+                    embed.add_field(name="Player list:", value=f"`{player_list[:-2]}`", inline=True)
+
+                try:
+                    ip_addr = socket.gethostbyname(ip)
+                    embed.add_field(name="IP: ", value=f"`{ip_addr}`", inline=True)
+                except: pass
+                
+                embed.add_field(name="Version:", value=f"`{status.version.name}`", inline=True)
+                
                 await ctx.respond(embed=embed)
             except KeyError:
                 await ctx.respond("This command has **not been setup properly** please ask the __admins/mods to run__ **/setup** to setup this command!")
 
     @server.error
     async def servererror(self, ctx, error):
-        error_logger.log("Server Command", error, sys.exc_info()[-1])
+        logger.error("Error in Server command")
+        logger.error(traceback.format_exc())
         await ctx.respond(embed=utilities.ErrorMessage.error_message())
         raise error
         
 def setup(bot):
-    print("[Custom] Loading extension...")
+    logger.info("Extension [Custom] loading...")
     bot.add_cog(Custom(bot))
 def teardown(bot):
-    print("[Custom] Unloading extension...")
+    logger.info("Extension [Custom] unloading...")

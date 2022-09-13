@@ -15,7 +15,8 @@ geocoder = "^1.38.1"
 mcstatus = "^9.0.4"
 staticmap = "^0.5.5"
 motor = "^3.0.0"
-py-cord = "2.0.0rc1"
+py-cord = "2.1.1"
+coloredlogs = "^15.0.1"
 
 [tool.poetry.dev-dependencies]
 

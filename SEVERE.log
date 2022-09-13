@@ -1,0 +1,77 @@
+2022-09-12 17:31:39,327 root[30484] CRITICAL Something fatal occured in the bot
+2022-09-12 17:31:39,331 root[30484] ERROR Traceback (most recent call last):
+  File "c:\Users\chcha\OneDrive\Documents\GitHub\Reko\main.py", line 16, in <module>
+    from src.bot import bot
+  File "c:\Users\chcha\OneDrive\Documents\GitHub\Reko\src\bot.py", line 13, in <module>
+    error_logger=utilities.ErrorLogger("Reko")
+AttributeError: module 'src.utilities' has no attribute 'ErrorLogger'
+
+2022-09-12 17:36:15,006 root[18696] CRITICAL Something fatal occured in the bot
+2022-09-12 17:36:15,010 root[18696] ERROR Traceback (most recent call last):
+  File "C:\Users\chcha\OneDrive\Documents\GitHub\Reko\.venv\lib\site-packages\discord\cog.py", line 731, in _load_from_module_spec
+    spec.loader.exec_module(lib)  # type: ignore
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "c:\Users\chcha\OneDrive\Documents\GitHub\Reko\src\extensions\general.py", line 10, in <module>
+    error_logger = utilities.ErrorLogger("General")
+AttributeError: module 'src.utilities' has no attribute 'ErrorLogger'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "c:\Users\chcha\OneDrive\Documents\GitHub\Reko\main.py", line 16, in <module>
+    from src.bot import bot
+  File "c:\Users\chcha\OneDrive\Documents\GitHub\Reko\src\bot.py", line 45, in <module>
+    bot.load_extension("src.extensions.general")
+  File "C:\Users\chcha\OneDrive\Documents\GitHub\Reko\.venv\lib\site-packages\discord\cog.py", line 867, in load_extension
+    self._load_from_module_spec(spec, name)
+  File "C:\Users\chcha\OneDrive\Documents\GitHub\Reko\.venv\lib\site-packages\discord\cog.py", line 734, in _load_from_module_spec
+    raise errors.ExtensionFailed(key, e) from e
+discord.errors.ExtensionFailed: Extension 'src.extensions.general' raised an error: AttributeError: module 'src.utilities' has no attribute 'ErrorLogger'
+
+2022-09-12 17:41:38,318 root[1316] CRITICAL Something fatal occured in the bot
+2022-09-12 17:41:38,323 root[1316] ERROR Traceback (most recent call last):
+  File "C:\Users\chcha\OneDrive\Documents\GitHub\Reko\.venv\lib\site-packages\discord\cog.py", line 731, in _load_from_module_spec
+    spec.loader.exec_module(lib)  # type: ignore
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "c:\Users\chcha\OneDrive\Documents\GitHub\Reko\src\extensions\custom.py", line 11, in <module>
+    error_logger = utilities.ErrorLogger("Custom Commands")
+AttributeError: module 'src.utilities' has no attribute 'ErrorLogger'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "c:\Users\chcha\OneDrive\Documents\GitHub\Reko\main.py", line 16, in <module>
+    from src.bot import bot
+  File "c:\Users\chcha\OneDrive\Documents\GitHub\Reko\src\bot.py", line 46, in <module>
+    bot.load_extension("src.extensions.custom")
+  File "C:\Users\chcha\OneDrive\Documents\GitHub\Reko\.venv\lib\site-packages\discord\cog.py", line 867, in load_extension
+    self._load_from_module_spec(spec, name)
+  File "C:\Users\chcha\OneDrive\Documents\GitHub\Reko\.venv\lib\site-packages\discord\cog.py", line 734, in _load_from_module_spec
+    raise errors.ExtensionFailed(key, e) from e
+discord.errors.ExtensionFailed: Extension 'src.extensions.custom' raised an error: AttributeError: module 'src.utilities' has no attribute 'ErrorLogger'
+
+2022-09-12 17:45:02,585 root[19532] CRITICAL Something fatal occured in the bot
+2022-09-12 17:45:02,586 root[19532] ERROR Traceback (most recent call last):
+  File "C:\Users\chcha\OneDrive\Documents\GitHub\Reko\.venv\lib\site-packages\discord\cog.py", line 731, in _load_from_module_spec
+    spec.loader.exec_module(lib)  # type: ignore
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "c:\Users\chcha\OneDrive\Documents\GitHub\Reko\src\extensions\tasks.py", line 13, in <module>
+    error_logger = utilities.ErrorLogger("Tasks")
+AttributeError: module 'src.utilities' has no attribute 'ErrorLogger'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "c:\Users\chcha\OneDrive\Documents\GitHub\Reko\main.py", line 16, in <module>
+    from src.bot import bot
+  File "c:\Users\chcha\OneDrive\Documents\GitHub\Reko\src\bot.py", line 47, in <module>
+    bot.load_extension("src.extensions.tasks")
+  File "C:\Users\chcha\OneDrive\Documents\GitHub\Reko\.venv\lib\site-packages\discord\cog.py", line 867, in load_extension
+    self._load_from_module_spec(spec, name)
+  File "C:\Users\chcha\OneDrive\Documents\GitHub\Reko\.venv\lib\site-packages\discord\cog.py", line 734, in _load_from_module_spec
+    raise errors.ExtensionFailed(key, e) from e
+discord.errors.ExtensionFailed: Extension 'src.extensions.tasks' raised an error: AttributeError: module 'src.utilities' has no attribute 'ErrorLogger'
+

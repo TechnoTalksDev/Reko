@@ -1,6 +1,6 @@
 from asyncio import tasks
 from pydoc import doc
-import random, discord, datetime, motor, motor.motor_asyncio, os, sys
+import random, discord, datetime, motor, motor.motor_asyncio, os, sys, coloredlogs, logging, traceback
 import src.utilities as utilities
 from discord.commands import slash_command
 from discord.commands import Option
@@ -10,7 +10,12 @@ from colorama import Fore
 from mcstatus import JavaServer
 
 #intialize error_logger & error_message
-error_logger = utilities.ErrorLogger("Tasks")
+coloredlogs.install(level="INFO", fmt="%(asctime)s %(name)s[%(process)d] %(levelname)s %(message)s")
+logger = logging.getLogger("Reko")
+file_handler = logging.FileHandler("SEVERE.log")
+file_handler.setLevel(logging.ERROR)
+file_handler.setFormatter(logging.Formatter(fmt="%(asctime)s %(name)s[%(process)d] %(levelname)s %(message)s"))
+logger.addHandler(file_handler)
 
 #intialize mongodb
 db = utilities.Mongo().db
@@ -48,8 +53,8 @@ class tasksCog(commands.Cog):
     @tasks.loop(seconds=30.0)
     async def tick(self):
         tick = str(self.index)
-        
-        print("\n[Reko] {"+datetime.datetime.now().strftime("%H:%M:%S")+"} Tick: "+tick+f" {round(self.bot.latency * 1000)}ms")
+
+        logger.info("Tick: "+tick+f" {round(self.bot.latency * 1000)}ms")
 
         self.index += 1
     #player tracking   
@@ -79,7 +84,7 @@ class tasksCog(commands.Cog):
             
             except Exception as e: 
                 await channel.send(embed=utilities.ErrorMessage.error_message())
-                error_logger.log("Player Tracking", e, sys.exc_info()[-1], "Failed to connect to server")
+                logger.warn("Player Tracking failed to connect to server!")
                 continue
             #player_count = info["players"]["online"]
             current = {guild_id: [player_count]}
@@ -143,7 +148,8 @@ class tasksCog(commands.Cog):
         await self.bot.wait_until_ready()
     @tick.error
     async def tickerror(self, error):
-        error_logger.log("Tick", error, sys.exc_info()[-1])
+        logger.critical("TICK TASK HAS FAILED")
+        logger.critical(traceback.format_exc())
         return
     
     @track.before_loop
@@ -151,7 +157,8 @@ class tasksCog(commands.Cog):
         await self.bot.wait_until_ready()
     @track.error
     async def trackerror(self, error):
-        error_logger.log("Tracking", error, sys.exc_info()[-1])
+        logger.error("Error in tracking")
+        logger.error(traceback.format_exc())
         return
     
     @status.before_loop
@@ -159,7 +166,8 @@ class tasksCog(commands.Cog):
         await self.bot.wait_until_ready()
     @status.error
     async def statuserror(self, error):
-        error_logger.log("Status", error, sys.exc_info()[-1])
+        logger.error("Error in updating Status")
+        logger.error(traceback.format_exc())
         return
 
     @bot_stats.before_loop
@@ -167,11 +175,12 @@ class tasksCog(commands.Cog):
         await self.bot.wait_until_ready()
     @bot_stats.error
     async def bot_statuserror(self, error):
-        error_logger.log("Bot Stats", error, sys.exc_info()[-1])
+        logger.error("Error in uploading bot stats")
+        logger.error(traceback.format_exc())
         return
 
 def setup(bot):
-    print("[Tasks] Loading extension...")
+    logger.info("Extension [Tasks] loading...")
     bot.add_cog(tasksCog(bot))
 def teardown(bot):
-    print("[Tasks] Unloading extension...")
+    logger.info("Extension [Tasks] unloading...")

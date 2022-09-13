@@ -1,13 +1,17 @@
-import discord, requests, json, geocoder, os, socket, sys, io
+import discord, requests, json, geocoder, os, socket, sys, io, coloredlogs, logging, traceback
 import src.utilities as utilities
 from discord.commands import slash_command
 from discord.ext import commands
 from discord.commands import Option
 from mcstatus import JavaServer
 from staticmap import StaticMap, CircleMarker
-#from main import guilds
-#intialize error logger
-error_logger = utilities.ErrorLogger("General")
+#lets log somemore
+coloredlogs.install(level="INFO", fmt="%(asctime)s %(name)s[%(process)d] %(levelname)s %(message)s")
+logger = logging.getLogger("Reko")
+file_handler = logging.FileHandler("SEVERE.log")
+file_handler.setLevel(logging.ERROR)
+file_handler.setFormatter(logging.Formatter(fmt="%(asctime)s %(name)s[%(process)d] %(levelname)s %(message)s"))
+logger.addHandler(file_handler)
 #color of bot
 color=0x6bf414
 #function to get server latency
@@ -54,9 +58,9 @@ class General(commands.Cog):
         
         embed.set_thumbnail(url="https://www.technotalks.net/ProjectMSS.png")
         
-        embed.add_field(name="__Commands__", value="`Ping`: Various stats of the bot \n`Developer`: Sends info about the developer of this bot\n`Status`: Gets the status of any MC Server\n`Latency`: Gets the latency to a minecraft server in *ms*\n`Server`: Gets the status of the set MC Server, *set by /setup*\n`Setup [*Admin ONLY Command*]`: This command is used to setup the guild specific features\n`Location`: Get the approximate location of a Minecraft server", inline=True)
+        embed.add_field(name="__Commands__", value="`Ping`: Various stats of the bot\n`Status`: Gets the status of any MC Server\n`Latency`: Gets the latency to a minecraft server in *ms*\n`Server`: Gets the status of the set MC Server, *set by /setup*\n`Setup [*Admin ONLY Command*]`: This command is used to setup the guild specific features\n`Location`: Get the approximate location of a Minecraft server", inline=True)
         
-        embed.add_field(name="\u200B", value=f"💻 Developed by TechnoTalks, Support Server: [Join now!](https://discord.com/invite/8vNHAA36fR), Thank you for using {self.bot.user.display_name}!", inline=False)
+        embed.add_field(name="\u200B", value=f"💻 Developed by [TechnoTalks](https://www.technotalks.net), Support Server: [Join now!](https://discord.com/invite/8vNHAA36fR), Thank you for using {self.bot.user.display_name}!", inline=False)
         
         await ctx.respond(embed=embed)
     @help.error
@@ -64,8 +68,9 @@ class General(commands.Cog):
         #tell the user their was an error
         await ctx.respond(embed=utilities.ErrorMessage.default())
         #log the error and line number
-        error_logger.log("Help Command", error, sys.exc_info()[-1])
-
+        logger.error("Error in Help Command")
+        logger.error(traceback.format_exc())
+    """ Guess no self advertising :(
     #dev command self advertising go brrr
     @slash_command(description="Information about the developer!")
     async def dev(self, ctx):
@@ -86,7 +91,9 @@ class General(commands.Cog):
         #tell the user their was an error
         await ctx.respond(embed=utilities.ErrorMessage.default())
         #log the error and line number
-        error_logger.log("Dev Command", error, sys.exc_info()[-1])
+        logger.error("Error in Dev command")
+        logger.error(traceback.format_exc())
+    """
     #status command
     @slash_command(description= "Get the Status of any Minecraft Server.")
     async def status(self, ctx, ip: Option(str, "The ip of the server.", required=True)):
@@ -102,22 +109,26 @@ class General(commands.Cog):
         #get motd
         motd = utilities.StatusCore.motd_cleanser(status.description)
 
-        embed=discord.Embed(title=f"✅ {ip}", description=f"**{motd}**",color=color)
+        embed=discord.Embed(title=f"✅ {ip}", description=f"**{motd}**",color=color)    
         embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
         
-        embed.add_field(name="Player Count:", value=f"`{status.players.online}/{status.players.max}`", inline=False)
+        embed.add_field(name="Player Count:", value=f"`{status.players.online}/{status.players.max}`", inline=True)
         
+        latency_result = await latencyraw(ip)
+        if latency_result != None:
+            embed.add_field(name="Latency/Ping", value=f"`{round(latency_result, 2)}`", inline=True)
+
         if status.players.sample != None and status.players.sample != []:
             player_list=""
             
             for player in status.players.sample:
                 player_list += player.name.replace(".", "")+", "
             
-            embed.add_field(name="Player list:", value=f"`{player_list[:-2]}`", inline=False)
+            embed.add_field(name="Player list:", value=f"`{player_list[:-2]}`", inline=True)
 
         try:
             ip_addr = socket.gethostbyname(ip)
-            embed.add_field(name="IP: ", value=f"`{ip_addr}`")
+            embed.add_field(name="IP: ", value=f"`{ip_addr}`", inline=True)
         except: pass
         
         embed.add_field(name="Version:", value=f"`{status.version.name}`", inline=True)
@@ -128,31 +139,8 @@ class General(commands.Cog):
         #tell the user their was an error
         await ctx.respond(embed=utilities.ErrorMessage.default())
         #log the error and line number
-        error_logger.log("Status Command", error, sys.exc_info()[-1])
-
-    @slash_command(description="Get the latency to a Minecraft Server.")
-    async def latency(self, ctx: discord.ApplicationContext, ip: Option(str, "IP of the MC server", required=True)):
-        await ctx.defer()
-        
-        result= await latencyraw(ip)
-        
-        if result == None:
-            await ctx.respond(embed=utilities.ErrorMessage.unreachable_server(ip))
-        
-        else:
-            embed=discord.Embed(title=f"Latency to {ip}", description=f"{result}"+"ms", color=color)
-            
-            embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
-            
-            embed.add_field(name="Note:", value="This result is the latency from the bot to the server.", inline=True)
-            
-            await ctx.respond(embed=embed)
-    @latency.error
-    async def latencyerror(self, ctx, error):
-        #tell the user their was an error
-        await ctx.respond(embed=utilities.ErrorMessage.default())
-        #log the error and line number
-        error_logger.log("Latency Command", error, sys.exc_info()[-1])
+        logger.error("Error in Status command")
+        logger.error(traceback.format_exc())
     
     @slash_command(description="Get the aproximate location of a server!")
     async def location(self, ctx, ip: Option(str, "IP of the desired server", required=True)):
@@ -192,10 +180,11 @@ class General(commands.Cog):
         #tell the user their was an error
         await ctx.respond(embed=utilities.ErrorMessage.default())
         #log the error and line number
-        error_logger.log("Location Command", error, sys.exc_info()[-1])
+        logger.error("Error in Location command")
+        logger.error(traceback.format_exc())
     
 def setup(bot):
-    print("[General] Loading extension...")
+    logger.info("Extension [General] loading...")
     bot.add_cog(General(bot))
 def teardown(bot):
-    print("[General] Unloading extension...")
+    logger.info("Extension [General] unloading...")

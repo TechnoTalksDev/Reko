@@ -1,5 +1,5 @@
 from click import help_option
-import discord, datetime, time, os, psutil, sys
+import discord, datetime, time, os, psutil, sys, coloredlogs, logging, traceback
 import src.utilities as utilities
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -9,8 +9,13 @@ from colorama import init, Fore
 activity = discord.Activity(type=discord.ActivityType.watching, name="Minecraft Servers")
 #bot = discord.Bot(activity=activity, debug_guilds=[846192394214965268])
 bot = discord.Bot(activity=activity)
-#intializing error logger
-error_logger=utilities.ErrorLogger("Reko")
+#we need to know what the fuck is happening so logging
+coloredlogs.install(level="INFO", fmt="%(asctime)s %(name)s[%(process)d] %(levelname)s %(message)s")
+logger = logging.getLogger("Reko")
+file_handler = logging.FileHandler("SEVERE.log")
+file_handler.setLevel(logging.ERROR)
+file_handler.setFormatter(logging.Formatter(fmt="%(asctime)s %(name)s[%(process)d] %(levelname)s %(message)s"))
+logger.addHandler(file_handler)
 #setting color of bot
 init(True)
 color=0x6bf414
@@ -21,7 +26,7 @@ except: pass
 token = os.getenv("TOKEN")
 #version
 version = "v0.5.4-beta"
-print(Fore.GREEN+"REKO "+version+"\nEnviroment: ")
+logger.info(Fore.GREEN+"REKO "+version+"\nEnviroment: ")
 #process of bot
 process = psutil.Process(os.getpid())
 #startup message
@@ -32,7 +37,7 @@ async def on_ready():
  |  |-  |   |-| |\| | |    |  |-| |   |<  `-. 
  '  `-' `-' ' ` ' ` `-'    '  ` ' `-' ' ` `-'
 presents: """)
-    print(f"[Reko] Logged in as {bot.user}")
+    logger.info(f"Logged in as {bot.user}")
     global startTime
     startTime=time.time()
 
@@ -96,12 +101,13 @@ async def reloaderror(ctx, error):
     #print(f"[Reload] Error with reloading the bot: {error}, Line #: {sys.exc_info()[-1].tb_lineno}")
     #print(str(sys.exc_info())+"\n"+str(sys.exc_info()[-1])+"\n")
     #print(type(sys.exc_info()[-1]))
-    error_logger.log("Reload Command", error, sys.exc_info()[-1])
+    logger.error("Reload Command error")
+    logger.error(traceback.format_exc())
 
 @bot.slash_command(description="Kill the bot", guild_ids=[846192394214965268])
 @commands.is_owner()
 async def kill(ctx):
-    print("\n[Reko] BYE!!! (Killed through command)")
+    logger.critical("BYE!!! (Killed through command)")
     await ctx.respond("Bye!")         
     await bot.close()
 @kill.error
@@ -109,4 +115,5 @@ async def killerror(ctx, error):
     await ctx.respond(embed=utilities.ErrorMessage.error_message())
     if error == "You do not own this bot.":
         return
-    error_logger.log("Kill Command", error, sys.exc_info()[-1])
+    logger.error("Error in Kill Command")
+    logger.error(traceback.format_exc())
