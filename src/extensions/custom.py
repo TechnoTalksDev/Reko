@@ -199,7 +199,7 @@ class Custom(commands.Cog):
                 
                 latency_result = status.latency
                 if latency_result != None:
-                    embed.add_field(name="Latency/Ping", value=f"`{round(latency_result, 2)}`", inline=True)
+                    embed.add_field(name="Latency/Ping", value=f"`{round(latency_result, 2)}ms`", inline=True)
                 
                 if status.players.sample != None and status.players.sample != []:
                     player_list=""

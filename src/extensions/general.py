@@ -27,9 +27,10 @@ async def latencyraw(ip):
 def get_map(ip):
     g = geocoder.ip(ip)
     coords = g.latlng
+    logger.debug("Got coordinates succesfully") 
     #create map
-    tiles_url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-    m = StaticMap(500, 500, url_template=tiles_url)
+    tiles_url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
+    m = StaticMap(750, 750)
     #create marker for location
     marker_outline = CircleMarker((coords[1], coords[0]), "white", 18)
     marker = CircleMarker((coords[1], coords[0]), "#6bf414", 12)
@@ -58,7 +59,7 @@ class General(commands.Cog):
         
         embed.set_thumbnail(url="https://www.technotalks.net/ProjectMSS.png")
         
-        embed.add_field(name="__Commands__", value="`Ping`: Various stats of the bot\n`Status`: Gets the status of any MC Server\n`Latency`: Gets the latency to a minecraft server in *ms*\n`Server`: Gets the status of the set MC Server, *set by /setup*\n`Setup [*Admin ONLY Command*]`: This command is used to setup the guild specific features\n`Location`: Get the approximate location of a Minecraft server", inline=True)
+        embed.add_field(name="__Commands__", value="`Ping`: Various stats of the bot\n`Status`: Gets the status of any MC Server\n`Server`: Gets the status of the set MC Server, *set by /setup*\n`Setup [*Admin ONLY Command*]`: This command is used to setup the guild specific features\n`Location`: Get the approximate location of a Minecraft server", inline=True)
         
         embed.add_field(name="\u200B", value=f"💻 Developed by [TechnoTalks](https://www.technotalks.net), Support Server: [Join now!](https://discord.com/invite/8vNHAA36fR), Thank you for using {self.bot.user.display_name}!", inline=False)
         
@@ -116,7 +117,7 @@ class General(commands.Cog):
         
         latency_result = await latencyraw(ip)
         if latency_result != None:
-            embed.add_field(name="Latency/Ping", value=f"`{round(latency_result, 2)}`", inline=True)
+            embed.add_field(name="Latency/Ping", value=f"`{round(latency_result, 2)}ms`", inline=True)
 
         if status.players.sample != None and status.players.sample != []:
             player_list=""
