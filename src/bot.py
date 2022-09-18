@@ -25,7 +25,7 @@ try:
 except: pass
 token = os.getenv("TOKEN")
 #version
-version = "v0.5.4-beta"
+#version = "v0.5.4-beta"
 logger.info(Fore.GREEN+"REKO "+version+"\nEnviroment: ")
 #process of bot
 process = psutil.Process(os.getpid())
@@ -60,7 +60,7 @@ async def ping(ctx):
     for guild in bot.guilds:
         users += guild.member_count
     embed.add_field(name="Users", value=f"`{users}`", inline=True)
-    embed.add_field(name="Version", value=f"`{version}`", inline=True)
+    #embed.add_field(name="Version", value=f"`{version}`", inline=True)
     embed.add_field(name="RAM", value=f"`{bytes2human(process.memory_info().rss)} used`", inline=True)
     await ctx.respond(embed=embed)
 
