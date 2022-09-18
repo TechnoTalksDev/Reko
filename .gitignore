@@ -9,3 +9,4 @@ map.html
 maps/
 .venv/
 server.py
+SEVERE.log

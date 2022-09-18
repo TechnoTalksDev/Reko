@@ -75,3 +75,17 @@ Traceback (most recent call last):
     raise errors.ExtensionFailed(key, e) from e
 discord.errors.ExtensionFailed: Extension 'src.extensions.tasks' raised an error: AttributeError: module 'src.utilities' has no attribute 'ErrorLogger'
 
+2022-09-18 11:25:43,560 Reko[15216] ERROR Traceback (most recent call last):
+  File "c:\Users\chcha\OneDrive\Documents\GitHub\Reko\main.py", line 14, in <module>
+    from src.bot import bot
+  File "c:\Users\chcha\OneDrive\Documents\GitHub\Reko\src\bot.py", line 29, in <module>
+    logger.info(Fore.GREEN+"REKO "+version+"\nEnviroment: ")
+NameError: name 'version' is not defined
+
+2022-09-18 11:25:43,560 Reko[15216] ERROR Traceback (most recent call last):
+  File "c:\Users\chcha\OneDrive\Documents\GitHub\Reko\main.py", line 14, in <module>
+    from src.bot import bot
+  File "c:\Users\chcha\OneDrive\Documents\GitHub\Reko\src\bot.py", line 29, in <module>
+    logger.info(Fore.GREEN+"REKO "+version+"\nEnviroment: ")
+NameError: name 'version' is not defined
+

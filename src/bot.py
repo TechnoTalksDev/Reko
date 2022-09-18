@@ -25,7 +25,7 @@ try:
 except: pass
 token = os.getenv("TOKEN")
 #version
-#version = "v0.5.4-beta"
+version = ""
 logger.info(Fore.GREEN+"REKO "+version+"\nEnviroment: ")
 #process of bot
 process = psutil.Process(os.getpid())
