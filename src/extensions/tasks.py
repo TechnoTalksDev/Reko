@@ -58,7 +58,7 @@ class tasksCog(commands.Cog):
 
         self.index += 1
     #player tracking   
-    @tasks.loop(seconds=5.0)
+    @tasks.loop(seconds=12.5)
     async def track(self):
         coll = tracking_coll
         cursor = coll.find().sort([('_id', 1)])
@@ -71,6 +71,7 @@ class tasksCog(commands.Cog):
                 port = guild["trackport"]
                 channel_id = guild["trackchannel"]
                 channel =  self.bot.get_channel(channel_id)
+                #logger.info(f"{guild_id}, {ip}, {port}, {channel_id}")
             except:
                 continue
             if channel == None:
@@ -81,14 +82,15 @@ class tasksCog(commands.Cog):
                 server = JavaServer(ip, port, 4)
                 status = await server.async_status()
                 player_count = status.players.online
+                #logger.info(player_count)
             
             except Exception as e: 
-                await channel.send(embed=utilities.ErrorMessage.error_message())
-                logger.warn("Player Tracking failed to connect to server!")
+                await channel.send(embed=utilities.ErrorMessage.unreachable_server(ip))
+                #logger.info(f"Player Tracking failed to connect to server {ip}!")
                 continue
             #player_count = info["players"]["online"]
             current = {guild_id: [player_count]}
-            
+            #logger.info(current)
             if guild_id in guild_cache:
                 
                 if player_count != guild_cache[guild_id][0]:

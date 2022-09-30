@@ -2,6 +2,7 @@ from inspect import Traceback
 import colorama, discord, motor, asyncio, os, motor.motor_asyncio, socket
 from colorama import Fore
 from dotenv import load_dotenv
+from mcstatus import JavaServer
 
 colorama.init(True)
 
@@ -51,26 +52,45 @@ class StatusCore():
 
         return motd
 
-    def default(status, motd = True, count = True, list = True, ip = True, version = True):
+    async def getLatency(ip):
+        try:
+            server = JavaServer.lookup(ip, 10)
+            status = await server.async_status()
+            ping = status.latency
+            return ping
+        except Exception as e:
+            return
+
+    async def default(ip, status, query):
         motd = StatusCore.motd_cleanser(status.description)
 
-        embed=discord.Embed(title=f"✅ {ip}", description=f"**{motd}**",color=color)
-
+        embed=discord.Embed(title=f"✅ {ip}", description=f"**{motd}**",color=color)    
         embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
         
-        embed.add_field(name="Player Count:", value=f"`{status.players.online}/{status.players.max}`", inline=False)
+        embed.add_field(name="Player Count:", value=f"`{status.players.online}/{status.players.max}`", inline=True)
         
+        latency_result = await StatusCore.getLatency(ip)
+        if latency_result != None:
+            embed.add_field(name="Latency/Ping", value=f"`{round(latency_result, 2)}ms`", inline=True)
+
         if status.players.sample != None and status.players.sample != []:
             player_list=""
             
             for player in status.players.sample:
                 player_list += player.name.replace(".", "")+", "
             
-            embed.add_field(name="Player list:", value=f"`{player_list[:-2]}`", inline=False)
+            embed.add_field(name="Player list:", value=f"`{player_list[:-2]}`", inline=True)
 
         try:
             ip_addr = socket.gethostbyname(ip)
-            embed.add_field(name="IP: ", value=f"`{ip_addr}`")
+            embed.add_field(name="IP: ", value=f"`{ip_addr}`", inline=True)
         except: pass
         
         embed.add_field(name="Version:", value=f"`{status.version.name}`", inline=True)
+        
+        embed.add_field(name="Query:", value=f"`{query[0]}`")
+
+        if query[0]:
+            embed.add_field(name="Plugins", value=f"`{query[1].software.plugins}`")
+
+        return embed

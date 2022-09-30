@@ -103,10 +103,19 @@ class General(commands.Cog):
         try:
             server = JavaServer.lookup(ip, 3)
             status = await server.async_status()
+            try:
+                query = [True, await server.async_query()]
+                logger.info(query)
+            except:
+                query = [False]
+                pass
         except:
             await ctx.respond(embed=utilities.ErrorMessage.unreachable_server(ip))
             return
         
+        embed = await utilities.StatusCore.default(ip, status, query)
+
+        """
         #get motd
         motd = utilities.StatusCore.motd_cleanser(status.description)
 
@@ -133,7 +142,7 @@ class General(commands.Cog):
         except: pass
         
         embed.add_field(name="Version:", value=f"`{status.version.name}`", inline=True)
-        
+        """
         await ctx.respond(embed=embed)
     @status.error
     async def statuserror(self, ctx, error):

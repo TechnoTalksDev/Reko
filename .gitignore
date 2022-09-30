@@ -10,3 +10,4 @@ maps/
 .venv/
 server.py
 SEVERE.log
+*.log
