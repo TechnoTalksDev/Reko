@@ -105,7 +105,6 @@ class General(commands.Cog):
             status = await server.async_status()
             try:
                 query = [True, await server.async_query()]
-                logger.info(query)
             except:
                 query = [False]
                 pass

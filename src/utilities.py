@@ -66,31 +66,56 @@ class StatusCore():
 
         embed=discord.Embed(title=f"✅ {ip}", description=f"**{motd}**",color=color)    
         embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
-        
-        embed.add_field(name="Player Count:", value=f"`{status.players.online}/{status.players.max}`", inline=True)
-        
-        latency_result = await StatusCore.getLatency(ip)
-        if latency_result != None:
-            embed.add_field(name="Latency/Ping", value=f"`{round(latency_result, 2)}ms`", inline=True)
-
-        if status.players.sample != None and status.players.sample != []:
-            player_list=""
+        #-------------------------------without query-------------------------------------
+        if True != query[0]:
+            embed.add_field(name="Player Count:", value=f"`{status.players.online}/{status.players.max}`", inline=True)
             
-            for player in status.players.sample:
-                player_list += player.name.replace(".", "")+", "
+            latency_result = await StatusCore.getLatency(ip)
+            if latency_result != None:
+                embed.add_field(name="Latency/Ping", value=f"`{round(latency_result, 2)}ms`", inline=True)
+
+            if status.players.sample != None and status.players.sample != []:
+                player_list=""
+                
+                for player in status.players.sample:
+                    player_list += player.name.replace(".", "")+", "
+                
+                embed.add_field(name="Player list:", value=f"`{player_list[:-2]}`", inline=True)
+
+            try:
+                ip_addr = socket.gethostbyname(ip)
+                embed.add_field(name="IP: ", value=f"`{ip_addr}`", inline=True)
+            except: pass
             
-            embed.add_field(name="Player list:", value=f"`{player_list[:-2]}`", inline=True)
+            embed.add_field(name="Version:", value=f"`{status.version.name}`", inline=True)
+        #------------------------------------------------------------------------------------
+        else:
+            embed.add_field(name="Player Count:", value=f"`{query[1].players.online}/{query[1].players.max}`", inline=True)
+            
+            latency_result = await StatusCore.getLatency(ip)
+            if latency_result != None:
+                embed.add_field(name="Latency/Ping", value=f"`{round(latency_result, 2)}ms`", inline=True)
 
-        try:
-            ip_addr = socket.gethostbyname(ip)
-            embed.add_field(name="IP: ", value=f"`{ip_addr}`", inline=True)
-        except: pass
-        
-        embed.add_field(name="Version:", value=f"`{status.version.name}`", inline=True)
-        
-        embed.add_field(name="Query:", value=f"`{query[0]}`")
+            if query[1].players.names != None and query[1].players.names != []:
+                player_list=""
+                
+                for player in query[1].players.names:
+                    player_list += player.name.replace(".", "")+", "
+                
+                embed.add_field(name="Player list:", value=f"`{player_list[:-2]}`", inline=True)
+            try:
+                ip_addr = socket.gethostbyname(ip)
+                embed.add_field(name="IP: ", value=f"`{ip_addr}`", inline=True)
+            except: pass
+            
+            embed.add_field(name="Version:", value=f"`{status.version.name}`", inline=True)
 
-        if query[0]:
-            embed.add_field(name="Plugins", value=f"`{query[1].software.plugins}`")
+            embed.add_field(name="Query:", value=f"`{query[0]}`")
+
+            plugins = ""
+            for plugin in query[1].software.plugins:
+                plugins += plugin+", "
+
+            embed.add_field(name="Plugins", value=f"`{plugins}`")
 
         return embed
