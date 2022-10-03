@@ -58,7 +58,7 @@ class tasksCog(commands.Cog):
 
         self.index += 1
     #player tracking   
-    @tasks.loop(seconds=12.5)
+    @tasks.loop(seconds=10.0)
     async def track(self):
         coll = tracking_coll
         cursor = coll.find().sort([('_id', 1)])
@@ -82,6 +82,11 @@ class tasksCog(commands.Cog):
                 server = JavaServer(ip, port, 4)
                 status = await server.async_status()
                 player_count = status.players.online
+                try:
+                    query = [True, await server.async_query()]
+                except:
+                    query = [False]
+                    pass
                 #logger.info(player_count)
             
             except Exception as e: 
@@ -91,6 +96,7 @@ class tasksCog(commands.Cog):
             #player_count = info["players"]["online"]
             current = {guild_id: [player_count]}
             #logger.info(current)
+            message = ""
             if guild_id in guild_cache:
                 
                 if player_count != guild_cache[guild_id][0]:
@@ -98,22 +104,29 @@ class tasksCog(commands.Cog):
                     if player_count > guild_cache[guild_id][0]:
                         
                         if player_count - guild_cache[guild_id][0] == 1:
-                            await channel.send(f"> A player has **joined** the server! 😁")
+                            message = f"> A player has **joined** the server! 😁"
 
                         else:
                             players = player_count - guild_cache[guild_id][0]
-                            await channel.send(f"> **{players}** players have **joined** the server! 😁")
+                            message = f"> **{players}** players have **joined** the server! 😁"
 
                     elif player_count < guild_cache[guild_id][0]:
 
                         if guild_cache[guild_id][0] - player_count == 1:
-                            await channel.send(f"> A player has **left** the server! 😢")
+                            message = f"> A player has **left** the server! 😢"
                         
                         else:
                             players = guild_cache[guild_id][0] - player_count
-                            await channel.send(f"> **{players}** players have **left** the server! 😢")
+                            message = f"> **{players}** players have **left** the server! 😢"
                     
                     guild_cache.update(current)
+                    async for last_message in channel.history(limit=10):
+                        if last_message.author == self.bot.user:
+                            break
+                    try:
+                        await last_message.edit(content=message)
+                    except:
+                        await channel.send(message)
 
             else:
                 guild_cache.update(current)
