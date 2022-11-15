@@ -19,7 +19,7 @@ db = utilities.Mongo().db
 
 hotkey_coll = db.hotkey
 tracking_coll = db.tracking
-uc_coll = db.uc
+sp_coll = db.sp
 
 #accent color
 color=0x6bf414
@@ -27,11 +27,11 @@ color=0x6bf414
 features = [
     {"name": "player_tracking", "friendly_name": "Tracking", "db": tracking_coll, "description": "**Track player joins and leaves** of your set server! (Player names coming soon!)"}, 
     {"name": "server_command", "friendly_name": "/server", "db": hotkey_coll, "description": "Easily check the status of the set server **without having to manually type the ip** every time!"},
-    {"name": "uc", "friendly_name": "Updating Chart", "db": uc_coll, "description": "**Coming Soon!**"}]
+    {"name": "sp", "friendly_name": "Server Panel", "db": sp_coll, "description": "View live player count and various other stats with this updating panel!"}]
 
 class resetView(View):
     def __init__(self, data, ctx, value):
-        super().__init__(timeout=15)
+        super().__init__(timeout=30)
         self.data=data
         self.ctx=ctx
         self.value=value
@@ -42,9 +42,10 @@ class resetView(View):
             await tracking_coll.delete_many(self.data)
         elif self.value == "/server":
             await hotkey_coll.delete_many(self.data)
+        elif self.value == "Server Panel":
+            await sp_coll.delete_many(self.data)
         else:
-            logger.info("STORED FEATURE DATA NOT RECOGNIZED")
-            logger.info(self.value)
+            logger.warn("STORED FEATURE DATA NOT RECOGNIZED" + self.value)
         await interaction.response.edit_message(content="Previously stored configuration cleared! Please run the setup command again...", view=None)
     async def reset_on_timeout(self):
         for child in self.children:
@@ -63,7 +64,9 @@ class setupModal(discord.ui.Modal):
             self.add_item(discord.ui.InputText(label="Port of the server", value="25565"))
             self.add_item(discord.ui.InputText(label="Name of the channel to send tracking messages"))
         else:
-            self.add_item(discord.ui.InputText(label="Server ip for updating chart"))
+            self.add_item(discord.ui.InputText(label="Server IP"))
+            self.add_item(discord.ui.InputText(label="Port", value="25565"))
+            self.add_item(discord.ui.InputText(label="Channel name"))
 
     async def callback(self, interaction: discord.Interaction):
         sid=interaction.guild_id
@@ -88,8 +91,25 @@ class setupModal(discord.ui.Modal):
             else:
                 view=resetView(findguild, self.ctx, self.feature)
                 await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature. (*Dismiss this message to cancel*)", view=view)
+        elif self.feature == "Server Panel":
+            findguild= await sp_coll.find_one({"_id": sid})
+            if not findguild:
+                channel = discord.utils.get(interaction.guild.channels, name=self.children[2].value)
+                try:
+                    channel_id = channel.id
+                    await sp_coll.insert_one({"_id":sid, "ip": self.children[0].value, "channel": channel_id, "port": int(self.children[1].value), "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]})
+                    await channel.send(f"__Server panel for__ `{self.children[0].value}:{self.children[1].value}`")
+                    await interaction.response.send_message(f"Server Panel setup for `{self.children[0].value}:{self.children[1].value}` in <#{channel.id}>")
+                except AttributeError:
+                    await interaction.response.send_message("> Please provide a **valid channel name**! 😭\n> *(Valid channel names do not include the # ex. 'tracking' NOT '#tracking')*")
+            else:
+                view=resetView(findguild, self.ctx, self.feature)
+                logger.warn("Server panel has already been setup... Returning error...")
+                await interaction.response.send_message(embed=utilities.ErrorMessage.default())
+                #await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature. (*Dismiss this message to cancel*)", view=view)
+        
         else:
-            await interaction.response.send_message(embed=utilities.ErrorMessage.error_message())
+            await interaction.response.send_message(embed=utilities.ErrorMessage.default())
         
 class setupView(View):
     options = []
@@ -97,7 +117,7 @@ class setupView(View):
         options.append(discord.SelectOption(label=feature["friendly_name"], description=feature["description"].replace("*", "")))
     
     def __init__(self, ctx):
-        super().__init__(timeout=15)
+        super().__init__(timeout=30)
         self.ctx=ctx
         self.feature = None
     @discord.ui.select( 
@@ -134,6 +154,15 @@ class setupView(View):
                         button.disabled = True
                         await self.ctx.interaction.edit_original_message(view = self)
                         await interaction.response.send_modal(setupModal(ctx=self.ctx, feature=self.feature, title="Reko Setup"))
+                elif self.feature == "Server Panel":
+                    findguild = await sp_coll.find_one({"_id": interaction.guild_id})
+                    if findguild:
+                        view = resetView(findguild, self.ctx, self.feature)
+                        await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature. (*Dismiss this message to cancel*)", view=view, ephemeral=True)
+                    else:
+                        button.disabled = True
+                        await self.ctx.interaction.edit_original_message(view = self)
+                        await interaction.response.send_modal(setupModal(ctx=self.ctx, feature=self.feature, title = "Panel Setup"))
                 else:
                     await interaction.response.send_message("This feature is still a work in progress and is not complete!", ephemeral=True)           
             else:

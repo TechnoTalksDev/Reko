@@ -1,6 +1,6 @@
 from asyncio import tasks
 from pydoc import doc
-import random, discord, datetime, motor, motor.motor_asyncio, os, sys, coloredlogs, logging, traceback
+import random, discord, datetime, motor, motor.motor_asyncio, os, sys, coloredlogs, logging, traceback, pygal, io, base64, time
 import src.utilities as utilities
 from discord.commands import slash_command
 from discord.commands import Option
@@ -8,6 +8,8 @@ from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from colorama import Fore
 from mcstatus import JavaServer
+from pygal.style import NeonStyle
+import matplotlib.pyplot as plt
 
 #intialize error_logger & error_message
 coloredlogs.install(level="INFO", fmt="%(asctime)s %(name)s[%(process)d] %(levelname)s %(message)s")
@@ -23,6 +25,8 @@ db = utilities.Mongo().db
 tracking_coll = db.tracking
 
 botstats_coll = db.botstats
+
+sp_coll = db.sp
 #bot accent color
 color=0x6bf414
 #cache for tracking
@@ -42,6 +46,7 @@ class tasksCog(commands.Cog):
         self.track.start()
         self.status.start()
         self.bot_stats.start()
+        self.panel.start()
 
     def cog_unload(self):
         #cancel tasks on cog unload
@@ -49,6 +54,7 @@ class tasksCog(commands.Cog):
         self.track.cancel()
         self.status.cancel()
         self.bot_stats.cancel()
+        self.panel.cancel()
     #Looped Tasks
     @tasks.loop(seconds=30.0)
     async def tick(self):
@@ -82,6 +88,7 @@ class tasksCog(commands.Cog):
                 server = JavaServer(ip, port, 4)
                 status = await server.async_status()
                 player_count = status.players.online
+                logger.info("Got player count in tracking")
                 try:
                     query = [True, await server.async_query()]
                 except:
@@ -130,6 +137,76 @@ class tasksCog(commands.Cog):
 
             else:
                 guild_cache.update(current)
+    
+    #Server panel
+    @tasks.loop(seconds=20.0)
+    async def panel(self):
+        coll = sp_coll
+        cursor = coll.find().sort([('_id', 1)])
+        docs = await cursor.to_list(length=None)
+
+        for guild in docs:
+            try:
+                guild_id = guild["_id"]
+                ip = guild["ip"]
+                port = guild["port"]
+                channel_id = guild["channel"]
+                data = guild["data"]
+                channel =  self.bot.get_channel(channel_id)
+            except:
+                await channel.send(embed=utilities.ErrorMessage.unreachable_server(ip))
+                continue
+            
+            try:
+                server = JavaServer.lookup(ip, 3)
+                status = await server.async_status()
+            except:
+                await channel.send(embed=utilities.unreachable_server(ip))
+                return
+        
+            embed = await utilities.StatusCore.default(ip, status, [False])
+            plot_time = time.time()
+            #charting and data
+            plt.style.use(["dark_background", "fast"])
+            fig, ax = plt.subplots()
+
+            data.pop(0)
+            data.append(status.players.online)
+            findguild = await sp_coll.find_one({"_id": guild_id})
+            if findguild:
+                await sp_coll.delete_many(findguild)
+            await sp_coll.insert_one({"_id": guild_id, "ip": ip, "channel": channel_id, "port": port, "data": data})
+            
+            a = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+            b = data
+
+            for x, y in zip(a, b):
+                if y != 0:
+                    label = "{:.0f}".format(y)
+                    plt.annotate(label, (x, y), textcoords="offset points", xytext=(0,10), ha="center")
+
+            ax.plot(a, b, "#6bf414")
+            ax.set_ylabel("Player Count")
+            ax.set_xlabel("Last 10 minutes")
+            buf = io.BytesIO()
+
+            plt.savefig(buf, format="PNG")
+            buf.seek(0)
+            discord_chart = discord.File(fp=buf, filename="chart.png")
+            #discord_chart = discord.File(io.BytesIO(chart.encode()), filename=f"chart.png")
+
+            embed.set_image(url=f"attachment://chart.png")
+            plot_time = str(round(time.time()-plot_time, 4)*1000)
+            embed.set_footer(text = f"Rendered chart in {plot_time}ms")
+
+            async for message in channel.history(limit=10):
+                if message.author == self.bot.user:
+                    #await message.edit(embed=None)
+                    await message.edit(embed=embed, file=discord_chart)
+                    break
+
+            #await channel.send(embed=embed)
+
     #status
     @tasks.loop(seconds=60.0)
     async def status(self):
@@ -148,15 +225,21 @@ class tasksCog(commands.Cog):
             await self.bot.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name="Minecraft"))
    
     #Push bot stats to mongodb
-    @tasks.loop(seconds=30.0)
+    @tasks.loop(minutes = 3)
     async def bot_stats(self):
         coll = botstats_coll
         findguild= await coll.find_one({"_id": self.bot.application_id})
         
         if findguild:
             await coll.delete_many(findguild)
+        users = 0
+        for guild in self.bot.guilds:
+            users += guild.member_count
         
-        await coll.insert_one({"_id": self.bot.application_id, "guild_count": len(self.bot.guilds), "users": len(self.bot.users), "commands_run": "Unknown"})
+        commands_run = None
+
+        logger.info(f"Uploading bot stats... guild_count: {len(self.bot.guilds)}, users: {users}, commands_run: {commands_run} ")
+        await coll.insert_one({"_id": self.bot.application_id, "guild_count": len(self.bot.guilds), "users": users, "commands_run": commands_run})
     
     @tick.before_loop
     async def before_tick(self):
@@ -190,6 +273,15 @@ class tasksCog(commands.Cog):
         await self.bot.wait_until_ready()
     @bot_stats.error
     async def bot_statuserror(self, error):
+        logger.error("Error in uploading bot stats")
+        logger.error(traceback.format_exc())
+        return
+
+    @panel.before_loop
+    async def before_panel(self):
+        await self.bot.wait_until_ready()
+    @panel.error
+    async def bot_panel(self, error):
         logger.error("Error in uploading bot stats")
         logger.error(traceback.format_exc())
         return

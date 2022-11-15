@@ -88,6 +88,7 @@ class StatusCore():
             except: pass
             
             embed.add_field(name="Version:", value=f"`{status.version.name}`", inline=True)
+            embed.add_field(name="Query:", value=f"`{query[0]}`")
         #------------------------------------------------------------------------------------
         else:
             embed.add_field(name="Player Count:", value=f"`{query[1].players.online}/{query[1].players.max}`", inline=True)
