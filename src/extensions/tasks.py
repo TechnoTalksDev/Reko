@@ -1,6 +1,6 @@
 from asyncio import tasks
 from pydoc import doc
-import random, discord, datetime, motor, motor.motor_asyncio, os, sys, coloredlogs, logging, traceback, pygal, io, base64, time
+import random, discord, datetime, motor, motor.motor_asyncio, os, sys, coloredlogs, logging, traceback, io, base64, time
 import src.utilities as utilities
 from discord.commands import slash_command
 from discord.commands import Option
@@ -8,7 +8,6 @@ from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from colorama import Fore
 from mcstatus import JavaServer
-from pygal.style import NeonStyle
 import matplotlib.pyplot as plt
 
 #intialize error_logger & error_message
