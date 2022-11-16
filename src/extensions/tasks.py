@@ -138,7 +138,7 @@ class tasksCog(commands.Cog):
                 guild_cache.update(current)
     
     #Server panel
-    @tasks.loop(seconds=20.0)
+    @tasks.loop(seconds=60.0)
     async def panel(self):
         coll = sp_coll
         cursor = coll.find().sort([('_id', 1)])
@@ -203,8 +203,10 @@ class tasksCog(commands.Cog):
                     if message.author == self.bot.user:
                         #await message.edit(embed=None)
                         await message.edit(embed=embed, file=discord_chart)
+                        discord_chart.close() #Prevent memory leak
                         break
             except:
+                discord_chart.close()
                 pass
 
             #await channel.send(embed=embed)

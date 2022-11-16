@@ -183,7 +183,7 @@ class General(commands.Cog):
         #send embed
         await ctx.respond(embed=embed, file=image)
         #clean up
-        image.close() #Dosent seem to affect memory usuage?
+        image.close() #Prevent Memory Leak
     @location.error
     async def locationerror(self, ctx, error):
         #tell the user their was an error
