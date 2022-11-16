@@ -66,7 +66,7 @@ class setupModal(discord.ui.Modal):
         else:
             self.add_item(discord.ui.InputText(label="Server IP"))
             self.add_item(discord.ui.InputText(label="Port", value="25565"))
-            self.add_item(discord.ui.InputText(label="Channel name"))
+            self.add_item(discord.ui.InputText(label="Channel name (Make sure the bot has valid permissions!)"))
 
     async def callback(self, interaction: discord.Interaction):
         sid=interaction.guild_id
@@ -98,10 +98,15 @@ class setupModal(discord.ui.Modal):
                 try:
                     channel_id = channel.id
                     await sp_coll.insert_one({"_id":sid, "ip": self.children[0].value, "channel": channel_id, "port": int(self.children[1].value), "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]})
-                    await channel.send(f"__Server panel for__ `{self.children[0].value}:{self.children[1].value}`")
-                    await interaction.response.send_message(f"Server Panel setup for `{self.children[0].value}:{self.children[1].value}` in <#{channel.id}>")
+                    try:
+                        await channel.send(f"__Server panel for__ `{self.children[0].value}:{self.children[1].value}`")
+                        await interaction.response.send_message(f"Server Panel setup for `{self.children[0].value}:{self.children[1].value}` in <#{channel.id}>")
+                    except MissingPermissions:
+                        await interaction.response.send_message(f"**Invalid Permissions!** The bot dosen't have the required permissions to send messages in the channel selected!")
+                        await sp_coll.delete_many({"_id": sid})
                 except AttributeError:
                     await interaction.response.send_message("> Please provide a **valid channel name**! 😭\n> *(Valid channel names do not include the # ex. 'tracking' NOT '#tracking')*")
+                    await sp_coll.delete_many({"_id": sid})
             else:
                 view=resetView(findguild, self.ctx, self.feature)
                 logger.warn("Server panel has already been setup... Returning error...")
