@@ -42,7 +42,7 @@ class tasksCog(commands.Cog):
         self.index = 0
         #self.{name of async looped function}
         self.tick.start()
-        self.track.start()
+        #self.track.start()
         self.status.start()
         self.bot_stats.start()
         self.panel.start()
@@ -50,7 +50,7 @@ class tasksCog(commands.Cog):
     def cog_unload(self):
         #cancel tasks on cog unload
         self.tick.cancel()
-        self.track.cancel()
+        #self.track.cancel()
         self.status.cancel()
         self.bot_stats.cancel()
         self.panel.cancel()
@@ -151,7 +151,7 @@ class tasksCog(commands.Cog):
                 port = guild["port"]
                 channel_id = guild["channel"]
                 data = guild["data"]
-                channel =  self.bot.get_channel(channel_id)
+                channel = self.bot.get_channel(channel_id)
             except:
                 await channel.send(embed=utilities.ErrorMessage.unreachable_server(ip))
                 continue
@@ -198,11 +198,14 @@ class tasksCog(commands.Cog):
             plot_time = str(round(time.time()-plot_time, 4)*1000)
             embed.set_footer(text = f"Rendered chart in {plot_time}ms")
 
-            async for message in channel.history(limit=10):
-                if message.author == self.bot.user:
-                    #await message.edit(embed=None)
-                    await message.edit(embed=embed, file=discord_chart)
-                    break
+            try:
+                async for message in channel.history(limit=10):
+                    if message.author == self.bot.user:
+                        #await message.edit(embed=None)
+                        await message.edit(embed=embed, file=discord_chart)
+                        break
+            except:
+                pass
 
             #await channel.send(embed=embed)
 
@@ -248,7 +251,7 @@ class tasksCog(commands.Cog):
         logger.critical("TICK TASK HAS FAILED")
         logger.critical(traceback.format_exc())
         return
-    
+    """
     @track.before_loop
     async def before_track(self):
         await self.bot.wait_until_ready()
@@ -257,7 +260,7 @@ class tasksCog(commands.Cog):
         logger.error("Error in tracking")
         logger.error(traceback.format_exc())
         return
-    
+    """
     @status.before_loop
     async def before_status(self):
         await self.bot.wait_until_ready()
