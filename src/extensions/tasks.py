@@ -284,7 +284,7 @@ class tasksCog(commands.Cog):
         await self.bot.wait_until_ready()
     @panel.error
     async def bot_panel(self, error):
-        logger.error("Error in uploading bot stats")
+        logger.error("Error in Server Panel task")
         logger.error(traceback.format_exc())
         return
 

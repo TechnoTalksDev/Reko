@@ -66,7 +66,7 @@ class setupModal(discord.ui.Modal):
         else:
             self.add_item(discord.ui.InputText(label="Server IP"))
             self.add_item(discord.ui.InputText(label="Port", value="25565"))
-            self.add_item(discord.ui.InputText(label="Channel name (Make sure the bot has valid permissions!)"))
+            self.add_item(discord.ui.InputText(label="Channel name (Permissions Needed!)"))
 
     async def callback(self, interaction: discord.Interaction):
         sid=interaction.guild_id
