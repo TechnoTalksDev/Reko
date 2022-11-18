@@ -192,7 +192,6 @@ class tasksCog(commands.Cog):
             plt.savefig(buf, format="PNG")
             buf.seek(0)
             discord_chart = discord.File(fp=buf, filename="chart.png")
-            #discord_chart = discord.File(io.BytesIO(chart.encode()), filename=f"chart.png")
 
             embed.set_image(url=f"attachment://chart.png")
             plot_time = str(round(time.time()-plot_time, 4)*1000)
@@ -203,13 +202,13 @@ class tasksCog(commands.Cog):
                     if message.author == self.bot.user:
                         #await message.edit(embed=None)
                         await message.edit(embed=embed, file=discord_chart)
-                        discord_chart.close() #Prevent memory leak
+                        plt.close()
+                        buf.close()
                         break
             except:
-                discord_chart.close()
+                plt.close()
+                buf.close()
                 pass
-
-            #await channel.send(embed=embed)
 
     #status
     @tasks.loop(seconds=60.0)
