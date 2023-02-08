@@ -38,7 +38,7 @@ I request that if you want to test the main bot that you don't run a seperate in
 **Dependencies** and **enviroment variables**:
 1. Installing dependencies (Really quite simple because of... you guessed it! **_Poetry_**!)
 	- You do need to **[install poetry](https://python-poetry.org/docs/#installation)** first!
-	- Then simpily run `poetry install`!
+	- Then simply run `poetry install`!
 	- Poetry will then do all the work and install all the packages and their dependencies for you!
 	- **Note:** If your using an editor like VSCode and don't want to manually change the venv path then you can look into [this poetry config option](https://python-poetry.org/docs/configuration/#virtualenvsin-project) which creates the **venv in the project directory** simplifying things
 2. Setting up **enviroment variables**
