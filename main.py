@@ -27,7 +27,7 @@ token = os.getenv("TOKEN")
 
 #Run bot
 if __name__ == "__main__":
-    try: 
+    try:
         bot.run(token)
     except:
         pass

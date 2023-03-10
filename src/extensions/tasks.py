@@ -152,9 +152,13 @@ class tasksCog(commands.Cog):
                 channel_id = guild["channel"]
                 data = guild["data"]
                 channel = self.bot.get_channel(channel_id)
+                if channel == None:
+                    return
             except:
+                guild_id = guild["_id"]
+                logger.warning(f"Panel failed to fetch data for guild: {guild_id}")
                 await channel.send(embed=utilities.ErrorMessage.unreachable_server(ip))
-                continue
+                return
             
             try:
                 server = JavaServer.lookup(ip, 3)
