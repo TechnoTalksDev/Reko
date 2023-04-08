@@ -70,6 +70,7 @@ class tasksCog(commands.Cog):
         docs = await cursor.to_list(length=None)
 
         for guild in docs:
+            logger.log(guild["_id"])
             try:
                 guild_id = guild["_id"]
                 ip = guild["trackip"]
@@ -78,8 +79,10 @@ class tasksCog(commands.Cog):
                 channel =  self.bot.get_channel(channel_id)
                 #logger.info(f"{guild_id}, {ip}, {port}, {channel_id}")
             except:
+                logger.warn("Failed to retrieve data")
                 continue
             if channel == None:
+                logger.warn("Channel dosen't exist")
                 return
             #print(f"[Tasks] (Debug) IP:{ip}, Port: {port}, Port Type: {type(port)} ")
             
@@ -87,7 +90,7 @@ class tasksCog(commands.Cog):
                 server = JavaServer(ip, port, 4)
                 status = await server.async_status()
                 player_count = status.players.online
-                logger.info("Got player count in tracking")
+                logger.warn("Got player count in tracking")
                 try:
                     query = [True, await server.async_query()]
                 except:
@@ -143,7 +146,8 @@ class tasksCog(commands.Cog):
         coll = sp_coll
         cursor = coll.find().sort([('_id', 1)])
         docs = await cursor.to_list(length=None)
-
+        render_count = 0
+        sent_count = 0
         for guild in docs:
             try:
                 guild_id = guild["_id"]
@@ -153,20 +157,20 @@ class tasksCog(commands.Cog):
                 data = guild["data"]
                 channel = self.bot.get_channel(channel_id)
                 if channel == None:
-                    return
+                    logger.warn("Unable to retrieve channel")
+                    continue
             except:
                 guild_id = guild["_id"]
-                logger.warning(f"Panel failed to fetch data for guild: {guild_id}")
                 await channel.send(embed=utilities.ErrorMessage.unreachable_server(ip))
-                return
+                continue
             
             try:
                 server = JavaServer.lookup(ip, 3)
                 status = await server.async_status()
             except:
                 await channel.send(embed=utilities.unreachable_server(ip))
-                return
-        
+                continue
+
             embed = await utilities.StatusCore.default(ip, status, [False])
             plot_time = time.time()
             #charting and data
@@ -200,20 +204,24 @@ class tasksCog(commands.Cog):
             embed.set_image(url=f"attachment://chart.png")
             plot_time = str(round(time.time()-plot_time, 4)*1000)
             embed.set_footer(text = f"Rendered chart in {plot_time}ms")
-
+            
+            render_count += 1
+            
             try:
                 async for message in channel.history(limit=10):
                     if message.author == self.bot.user:
                         #await message.edit(embed=None)
                         await message.edit(embed=embed, file=discord_chart)
+                        sent_count += 1
                         plt.close()
                         buf.close()
-                        break
+                        continue
             except:
                 plt.close()
                 buf.close()
                 pass
-
+        logger.info(f"[Panel] Rendered {render_count} charts")
+        logger.info(f"[Panel] Sent {sent_count} charts")
     #status
     @tasks.loop(seconds=60.0)
     async def status(self):
