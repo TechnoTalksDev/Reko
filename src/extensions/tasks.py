@@ -157,7 +157,6 @@ class tasksCog(commands.Cog):
                 data = guild["data"]
                 channel = self.bot.get_channel(channel_id)
                 if channel == None:
-                    logger.warn("Unable to retrieve channel")
                     continue
             except:
                 guild_id = guild["_id"]
