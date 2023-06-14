@@ -1,7 +1,8 @@
 from asyncio import tasks
 from pydoc import doc
-import random, discord, datetime, motor, motor.motor_asyncio, os, sys, coloredlogs, logging, traceback, io, base64, time
+import random, discord, datetime, motor, motor.motor_asyncio, os, sys, coloredlogs, logging, traceback, io, base64, time, websockets
 import src.utilities as utilities
+import src.bot as srcbot
 from discord.commands import slash_command
 from discord.commands import Option
 from discord.ext import commands, tasks
@@ -26,6 +27,8 @@ tracking_coll = db.tracking
 botstats_coll = db.botstats
 
 sp_coll = db.sp
+
+link_coll = db.link
 #bot accent color
 color=0x6bf414
 #cache for tracking
@@ -33,10 +36,9 @@ guild_cache = {
     "Example": [datetime.datetime.now, ["TechnoTalks, garvinator123"]]
 }
 
-
 class tasksCog(commands.Cog):
     #init function
-    def __init__(self, bot):
+    def __init__(self, bot:discord.Bot):
         self.bot = bot
         #ticks from start counter
         self.index = 0
@@ -46,7 +48,13 @@ class tasksCog(commands.Cog):
         self.status.start()
         self.bot_stats.start()
         self.panel.start()
-
+        self.socket.start()
+        #record commands run for stats
+        @bot.event
+        async def on_application_command(ctx):
+            srcbot.commands_run += 1
+            #logger.info(srcbot.commands_run)
+    
     def cog_unload(self):
         #cancel tasks on cog unload
         self.tick.cancel()
@@ -54,6 +62,7 @@ class tasksCog(commands.Cog):
         self.status.cancel()
         self.bot_stats.cancel()
         self.panel.cancel()
+        self.socket.cancel
     #Looped Tasks
     @tasks.loop(seconds=30.0)
     async def tick(self):
@@ -79,10 +88,10 @@ class tasksCog(commands.Cog):
                 channel =  self.bot.get_channel(channel_id)
                 #logger.info(f"{guild_id}, {ip}, {port}, {channel_id}")
             except:
-                logger.warn("Failed to retrieve data")
+                logger.warning("Failed to retrieve data")
                 continue
             if channel == None:
-                logger.warn("Channel dosen't exist")
+                logger.warning("Channel dosen't exist")
                 return
             #print(f"[Tasks] (Debug) IP:{ip}, Port: {port}, Port Type: {type(port)} ")
             
@@ -90,7 +99,7 @@ class tasksCog(commands.Cog):
                 server = JavaServer(ip, port, 4)
                 status = await server.async_status()
                 player_count = status.players.online
-                logger.warn("Got player count in tracking")
+                logger.warning("Got player count in tracking")
                 try:
                     query = [True, await server.async_query()]
                 except:
@@ -140,6 +149,40 @@ class tasksCog(commands.Cog):
             else:
                 guild_cache.update(current)
     
+    #Link socket finder
+    @tasks.loop(seconds=30.0)
+    async def socket(self):
+        coll = link_coll
+        cursor = coll.find().sort([('_id', 1)])
+        docs = await cursor.to_list(length=None)
+        for guild in docs:
+            try:
+                guild_id = guild["_id"]
+                ip = guild["ip"]
+                port = guild["port"]
+                channel_id = guild["channel"]
+                token = guild["token"]
+                channel = self.bot.get_channel(channel_id)
+                if channel == None:
+                    logger.warning("[Socket] Channel is invalid")
+                    continue
+            except:
+                await channel.send(embed=utilities.ErrorMessage.unreachable_server(ip))
+                continue
+            
+            try:
+                create = True
+                for i in utilities.websockets_list:
+                    if i["guild"] == guild_id:
+                        create = False
+                if create:
+                    async with websockets.connect(f"ws://{ip}:{port}/", extra_headers = {"token": token}) as websocket:
+                        utilities.websockets_list.append({"guild_id": guild_id, "ip": ip, "port": port, "token":token, "channel": channel, "latched": False, "ping": -1})
+            except Exception as error:
+                logger.info(f"[Socket] Failed to create websocket for {ip}:{port}")
+            await srcbot.socketHandler.refreshConnections()
+            #logger.warning(utilities.websockets_list)
+                
     #Server panel
     @tasks.loop(seconds=60.0)
     async def panel(self):
@@ -164,10 +207,10 @@ class tasksCog(commands.Cog):
                 continue
             
             try:
-                server = JavaServer.lookup(ip, 3)
+                server = JavaServer.lookup(f"{ip}:{port}", 3)
                 status = await server.async_status()
             except:
-                await channel.send(embed=utilities.unreachable_server(ip))
+                await channel.send(embed=utilities.ErrorMessage.unreachable_server(ip))
                 continue
 
             embed = await utilities.StatusCore.default(ip, status, [False])
@@ -221,6 +264,7 @@ class tasksCog(commands.Cog):
                 pass
         logger.info(f"[Panel] Rendered {render_count} charts")
         logger.info(f"[Panel] Sent {sent_count} charts")
+    
     #status
     @tasks.loop(seconds=60.0)
     async def status(self):
@@ -239,7 +283,7 @@ class tasksCog(commands.Cog):
             await self.bot.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name="Minecraft"))
    
     #Push bot stats to mongodb
-    @tasks.loop(minutes = 3)
+    @tasks.loop(minutes = 1)
     async def bot_stats(self):
         coll = botstats_coll
         findguild= await coll.find_one({"_id": self.bot.application_id})
@@ -250,7 +294,7 @@ class tasksCog(commands.Cog):
         for guild in self.bot.guilds:
             users += guild.member_count
         
-        commands_run = None
+        commands_run = srcbot.commands_run
 
         logger.info(f"Uploading bot stats... guild_count: {len(self.bot.guilds)}, users: {users}, commands_run: {commands_run} ")
         await coll.insert_one({"_id": self.bot.application_id, "guild_count": len(self.bot.guilds), "users": users, "commands_run": commands_run})
@@ -273,6 +317,14 @@ class tasksCog(commands.Cog):
         logger.error(traceback.format_exc())
         return
     """
+    @socket.before_loop
+    async def before_socket(self):
+        await self.bot.wait_until_ready()
+    @socket.error
+    async def socket_error(self):
+        logger.error("[Socket] Fatal error")
+        logger.error(traceback.format_exc())
+        return
     @status.before_loop
     async def before_status(self):
         await self.bot.wait_until_ready()

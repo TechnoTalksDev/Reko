@@ -29,6 +29,12 @@ version = ""
 logger.info(Fore.GREEN+"REKO "+version+"\nEnviroment: ")
 #process of bot
 process = psutil.Process(os.getpid())
+
+global commands_run
+commands_run = 0
+
+logger.info(f"Commands_run: {commands_run}")
+
 #startup message
 @bot.event
 async def on_ready():
@@ -40,6 +46,8 @@ presents: """)
     logger.info(f"Logged in as {bot.user}")
     global startTime
     startTime=time.time()
+    global socketHandler
+    socketHandler= utilities.webSocketHandler()
 
 #loading extensions
 bot.load_extension("src.extensions.general")
@@ -62,6 +70,7 @@ async def ping(ctx):
     embed.add_field(name="Users", value=f"`{users}`", inline=True)
     #embed.add_field(name="Version", value=f"`{version}`", inline=True)
     embed.add_field(name="RAM", value=f"`{bytes2human(process.memory_info().rss)} used`", inline=True)
+    embed.add_field(name="Commands Run", value=f"`{commands_run}`", inline=True)
     await ctx.respond(embed=embed)
 
 @bot.event

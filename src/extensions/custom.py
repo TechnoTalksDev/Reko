@@ -1,5 +1,6 @@
-import discord, json, requests, motor, motor.motor_asyncio, os, socket, sys, coloredlogs, logging, traceback
+import discord, json, requests, motor, motor.motor_asyncio, os, socket, sys, coloredlogs, logging, traceback, hashlib
 import src.utilities as utilities
+import src.bot as srcbot
 from pkg_resources import require
 from discord.commands import slash_command , Option
 from discord.ext import commands
@@ -20,14 +21,15 @@ db = utilities.Mongo().db
 hotkey_coll = db.hotkey
 tracking_coll = db.tracking
 sp_coll = db.sp
-
+link_coll = db.link
 #accent color
 color=0x6bf414
 
 features = [
     {"name": "player_tracking", "friendly_name": "Tracking", "db": tracking_coll, "description": "**Track player joins and leaves** of your set server! (Player names coming soon!)"}, 
     {"name": "server_command", "friendly_name": "/server", "db": hotkey_coll, "description": "Easily check the status of the set server **without having to manually type the ip** every time!"},
-    {"name": "sp", "friendly_name": "Server Panel", "db": sp_coll, "description": "View live player count and various other stats with this updating panel!"}]
+    {"name": "sp", "friendly_name": "Server Panel", "db": sp_coll, "description": "View live player count and various other stats with this updating panel!"},
+    {"name": "link", "friendly_name": "Reko Link", "db": link_coll, "description": "Chat with your server directly!\n**Requires Reko Link plugin** to be installed on server!"}]
 
 class resetView(View):
     def __init__(self, data, ctx, value):
@@ -44,13 +46,15 @@ class resetView(View):
             await hotkey_coll.delete_many(self.data)
         elif self.value == "Server Panel":
             await sp_coll.delete_many(self.data)
+        elif self.value == "Reko Link":
+            await link_coll.delete_many(self.data)
         else:
             logger.warn("STORED FEATURE DATA NOT RECOGNIZED" + self.value)
         await interaction.response.edit_message(content="Previously stored configuration cleared! Please run the setup command again...", view=None)
     async def reset_on_timeout(self):
         for child in self.children:
             child.disabled = True
-        await self.ctx.interaction.edit_original_message(content="*This prompt has expired please run the command again*", view=self)
+        await self.ctx.interaction.edit_original_response(content="*This prompt has expired please run the command again*", view=self)
 
 class setupModal(discord.ui.Modal):
     def __init__(self, ctx, feature, *args, **kwargs) -> None:
@@ -63,10 +67,16 @@ class setupModal(discord.ui.Modal):
             self.add_item(discord.ui.InputText(label="IP to track joins, playtime, and leaves"))
             self.add_item(discord.ui.InputText(label="Port of the server", value="25565"))
             self.add_item(discord.ui.InputText(label="Name of the channel to send tracking messages"))
+        elif self.feature == "Reko Link":
+            self.add_item(discord.ui.InputText(label="Server IP"))
+            self.add_item(discord.ui.InputText(label="Port of link (Plugin config.yml)", value="25565"))
+            self.add_item(discord.ui.InputText(label="Name of the channel to send messages"))
+            self.add_item(discord.ui.InputText(label="Token"))
         else:
             self.add_item(discord.ui.InputText(label="Server IP"))
             self.add_item(discord.ui.InputText(label="Port", value="25565"))
             self.add_item(discord.ui.InputText(label="Channel name (Permissions Needed!)"))
+            
 
     async def callback(self, interaction: discord.Interaction):
         sid=interaction.guild_id
@@ -81,6 +91,8 @@ class setupModal(discord.ui.Modal):
         elif self.feature == "Tracking":
             findguild= await tracking_coll.find_one({"_id": sid})
             if not findguild:
+                await interaction.response.send_message("This feature is currently disabled due to technical difficulties 😔\nReko Link will replace this feature soon!", ephemeral=True)
+                '''
                 channel = discord.utils.get(interaction.guild.channels, name=self.children[2].value)
                 try:
                     channel_id = channel.id
@@ -88,6 +100,7 @@ class setupModal(discord.ui.Modal):
                     await interaction.response.send_message(f"Tracking server `{self.children[0].value}:{self.children[1].value}` in <#{channel_id}>")
                 except AttributeError:
                     await interaction.response.send_message("> Please provide a **valid channel name**! 😭\n> *(Valid channel names do not include the # ex. 'tracking' NOT '#tracking')*")
+                '''
             else:
                 view=resetView(findguild, self.ctx, self.feature)
                 await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature. (*Dismiss this message to cancel*)", view=view)
@@ -113,6 +126,25 @@ class setupModal(discord.ui.Modal):
                 await interaction.response.send_message(embed=utilities.ErrorMessage.default())
                 #await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature. (*Dismiss this message to cancel*)", view=view)
         
+        elif self.feature == "Reko Link":
+            findguild = await link_coll.find_one({"_id": sid})
+            if not findguild:
+                channel = discord.utils.get(interaction.guild.channels, name=self.children[2].value)
+                try:
+                    hashed_token = hashlib.sha256(self.children[3].value.encode()).hexdigest()
+                    await link_coll.insert_one({"_id":sid, "ip": self.children[0].value, "channel": channel.id, "port": int(self.children[1].value), "token": hashed_token})
+                    try:
+                        await channel.send(f"__Reko Link__ setup for `{self.children[0].value}`!")
+                        await interaction.response.send_message(f"__Reko Link__ setup for `{self.children[0].value}` in <#{channel.id}>")
+                    except MissingPermissions:
+                        await interaction.response.send_message(f"**Invalid Permissions!** The bot dosen't have the required permissions to send messages in the channel selected!")
+                        await link_coll.delete_many({"_id": sid})
+                except AttributeError:
+                    await interaction.response.send_message("> Please provide a **valid channel name**! 😭\n> *(Valid channel names do not include the # ex. 'link' NOT '#link')*")
+                    await link_coll.delete_many({"_id": sid})
+            else:
+                view = resetView(findguild, self.ctx, self.feature)
+                await interaction.response.send_message(embed=utilities.ErrorMessage.default())
         else:
             await interaction.response.send_message(embed=utilities.ErrorMessage.default())
         
@@ -122,7 +154,7 @@ class setupView(View):
         options.append(discord.SelectOption(label=feature["friendly_name"], description=feature["description"].replace("*", "")))
     
     def __init__(self, ctx):
-        super().__init__(timeout=30)
+        super().__init__(timeout=60)
         self.ctx=ctx
         self.feature = None
     @discord.ui.select( 
@@ -148,7 +180,7 @@ class setupView(View):
                         await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature. (*Dismiss this message to cancel*)", view=view, ephemeral=True)
                     else:
                         button.disabled = True
-                        await self.ctx.interaction.edit_original_message(view = self)
+                        await self.ctx.interaction.edit_original_response(view = self)
                         await interaction.response.send_modal(setupModal(ctx=self.ctx, feature=self.feature, title="Reko Setup"))
                 elif self.feature == "Tracking":
                     findguild= await tracking_coll.find_one({"_id": interaction.guild_id})
@@ -157,7 +189,7 @@ class setupView(View):
                         await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature. (*Dismiss this message to cancel*)", view=view, ephemeral=True)
                     else:
                         button.disabled = True
-                        await self.ctx.interaction.edit_original_message(view = self)
+                        await self.ctx.interaction.edit_original_response(view = self)
                         await interaction.response.send_modal(setupModal(ctx=self.ctx, feature=self.feature, title="Reko Setup"))
                 elif self.feature == "Server Panel":
                     findguild = await sp_coll.find_one({"_id": interaction.guild_id})
@@ -166,8 +198,17 @@ class setupView(View):
                         await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature. (*Dismiss this message to cancel*)", view=view, ephemeral=True)
                     else:
                         button.disabled = True
-                        await self.ctx.interaction.edit_original_message(view = self)
+                        await self.ctx.interaction.edit_original_response(view = self)
                         await interaction.response.send_modal(setupModal(ctx=self.ctx, feature=self.feature, title = "Panel Setup"))
+                elif self.feature == "Reko Link":
+                    findguild = await link_coll.find_one({"_id": interaction.guild_id})
+                    if findguild:
+                        view = resetView(findguild, self.ctx, self.feature)
+                        await interaction.response.send_message("You have already setup this feature... Hit the reset button bellow to clear the configuration of the selected feature. (*Dismiss this message to cancel*)", view=view, ephemeral=True)
+                    else:
+                        button.disabled = True
+                        await self.ctx.interaction.edit_original_response(view = self)
+                        await interaction.response.send_modal(setupModal(ctx=self.ctx, feature=self.feature, title = "Link Setup"))
                 else:
                     await interaction.response.send_message("This feature is still a work in progress and is not complete!", ephemeral=True)           
             else:
@@ -175,11 +216,22 @@ class setupView(View):
     async def on_timeout(self):
         for child in self.children:
             child.disabled = True
-        await self.ctx.interaction.edit_original_message(view=self)
+        await self.ctx.interaction.edit_original_response(view=self)
 
 class Custom(commands.Cog):
     def __init__(self, bot):
-        self.bot=bot
+        self.bot:discord.Bot=bot
+        link = self.bot.create_group("link", "Link to your server!")
+        
+        @link.command()
+        async def ping(ctx):
+            await srcbot.socketHandler.refreshPings()
+            await ctx.respond("Whats good homie")
+            
+        @link.command()
+        async def send(ctx):
+            await ctx.respond("Coming soon™️")
+              
 
     @slash_command(description="Setup Reko for your server!")
     @commands.has_permissions(administrator=True)
@@ -234,6 +286,7 @@ class Custom(commands.Cog):
             except KeyError:
                 await ctx.respond("This command has **not been setup properly** please ask the __admins/mods to run__ **/setup** to setup this command!")
 
+    
     @server.error
     async def servererror(self, ctx, error):
         logger.error("Error in Server command")

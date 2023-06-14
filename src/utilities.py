@@ -1,5 +1,5 @@
 from inspect import Traceback
-import colorama, discord, motor, asyncio, os, motor.motor_asyncio, socket
+import colorama, discord, motor, asyncio, os, motor.motor_asyncio, websockets, socket, coloredlogs, logging, json
 from colorama import Fore
 from dotenv import load_dotenv
 from mcstatus import JavaServer
@@ -9,6 +9,17 @@ colorama.init(True)
 load_dotenv("src/secrets/.env")
 
 color = 0x6bf414
+
+global websockets_list
+websockets_list = []
+
+#intialize error_logger & error_message
+coloredlogs.install(level="INFO", fmt="%(asctime)s %(name)s[%(process)d] %(levelname)s %(message)s")
+logger = logging.getLogger("Reko")
+file_handler = logging.FileHandler("SEVERE.log")
+file_handler.setLevel(logging.ERROR)
+file_handler.setFormatter(logging.Formatter(fmt="%(asctime)s %(name)s[%(process)d] %(levelname)s %(message)s"))
+logger.addHandler(file_handler)
 
 class ErrorMessage():
     def default():
@@ -120,3 +131,51 @@ class StatusCore():
             embed.add_field(name="Plugins", value=f"`{plugins}`")
 
         return embed
+    
+    
+class webSocketHandler():
+    async def newConnection(self, ip, port, token, channel: discord.TextChannel, guild):
+        try:
+            async for websocket in websockets.connect(f"ws://{ip}:{port}/", extra_headers = {"token": token}):
+                try:
+                    if not ([websocket, guild] in self.sockets):
+                        #logger.warn("adding socket")
+                        self.sockets.append([websocket, guild])
+                    while True:   
+                        #logger.warn(self.sockets)
+                        raw_msg:str = await websocket.recv()
+                        msg = raw_msg.strip()
+                        #logger.warn(f"[Socket Handler] Msg: {msg}")
+                        obj = json.loads(msg)
+                        if obj["type"] == "chat":
+                            player = obj["player"]
+                            chat = obj["msg"]      
+                            await channel.send(f">>> <**{player}**> {chat}")
+                        guild["ping"] = await websocket.ping()
+                        #logger.warn(guild["ping"])
+                except websockets.ConnectionClosed:
+                    self.sockets.remove([websocket, guild])
+                    guild["latched"] = False
+                    guild["ping"] = -1
+                    await channel.send(embed=ErrorMessage.unreachable_server(ip))
+        except:
+            websockets_list.remove(guild)
+    
+    async def refreshConnections(self):
+        for guild in websockets_list:
+            if not guild["latched"]:
+                guild["latched"] = True
+                await self.newConnection(guild["ip"], guild["port"], guild["token"], guild["channel"], guild)
+                logger.info("[Socket Handler] New connection " +guild["ip"])   
+    
+    async def refreshPings(self):
+        logger.warn("Refresheing pings")
+        logger.warn(self.sockets)
+        for soc in self.sockets:
+            waiter = await soc[0].ping()
+            soc[1]["ping"] = await waiter * 1000
+            #logger.warn(soc[1]["ping"])
+        
+    
+    def __init__(self) -> None:
+        self.sockets = []
