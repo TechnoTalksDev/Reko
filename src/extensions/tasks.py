@@ -203,14 +203,25 @@ class tasksCog(commands.Cog):
                     continue
             except:
                 guild_id = guild["_id"]
-                await channel.send(embed=utilities.ErrorMessage.unreachable_server(ip))
+                async for message in channel.history(limit=10):
+                    if message.author == self.bot.user:
+                        unreach_embed = utilities.ErrorMessage.unreachable_server(ip)
+                        unreach_embed.add_field(name="Updated:", value=f"<t:{int(time.time())}:R>", inline=True)
+                        await message.edit(embed=unreach_embed, attachments=[])
+                        
+                        break
                 continue
             
             try:
                 server = JavaServer.lookup(f"{ip}:{port}", 3)
                 status = await server.async_status()
             except:
-                await channel.send(embed=utilities.ErrorMessage.unreachable_server(ip))
+                async for message in channel.history(limit=10):
+                    if message.author == self.bot.user:
+                        unreach_embed = utilities.ErrorMessage.unreachable_server(ip)
+                        unreach_embed.add_field(name="Updated:", value=f"<t:{int(time.time())}:R>", inline=True)
+                        await message.edit(embed=unreach_embed, attachments=[])
+                        break
                 continue
 
             embed = await utilities.StatusCore.default(ip, status, [False])
@@ -244,8 +255,10 @@ class tasksCog(commands.Cog):
             discord_chart = discord.File(fp=buf, filename="chart.png")
 
             embed.set_image(url=f"attachment://chart.png")
-            plot_time = str(round(time.time()-plot_time, 4)*1000)
+            plot_time = str(int(round(time.time()-plot_time, 4)*1000))
             embed.set_footer(text = f"Rendered chart in {plot_time}ms")
+            
+            embed.add_field(name="Updated:", value=f"<t:{int(time.time())}:R>", inline=True)
             
             render_count += 1
             
@@ -257,7 +270,7 @@ class tasksCog(commands.Cog):
                         sent_count += 1
                         plt.close()
                         buf.close()
-                        continue
+                        break
             except:
                 plt.close()
                 buf.close()
