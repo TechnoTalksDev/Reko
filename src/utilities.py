@@ -1,5 +1,5 @@
 from inspect import Traceback
-import colorama, discord, motor, asyncio, os, motor.motor_asyncio, websockets, socket, coloredlogs, logging, json
+import colorama, discord, motor, asyncio, os, motor.motor_asyncio, websockets, socket, coloredlogs, logging, json, time
 from colorama import Fore
 from dotenv import load_dotenv
 from mcstatus import JavaServer
@@ -149,11 +149,22 @@ class webSocketHandler():
                         obj = json.loads(msg)
                         if obj["type"] == "chat":
                             player = obj["player"]
-                            chat = obj["msg"]      
+                            chat = obj["msg"]
                             await channel.send(f">>> <**{player}**> {chat}")
+                        elif obj["type"] == "broadcast":
+                            msg = obj["msg"]
+                            await channel.send(f">>> {msg}")
                         guild["ping"] = await websocket.ping()
                         #logger.warn(guild["ping"])
                 except websockets.ConnectionClosed:
+                    """
+                    async for message in channel.history(limit=10):
+                        if message.author == self.bot.user:
+                            unreach_embed = ErrorMessage.unreachable_server(ip)
+                            unreach_embed.add_field(name="Updated:", value=f"<t:{int(time.time())}:R>", inline=True)
+                            await message.edit(embed=unreach_embed, attachments=[])
+                            break
+                    """
                     self.sockets.remove([websocket, guild])
                     guild["latched"] = False
                     guild["ping"] = -1
