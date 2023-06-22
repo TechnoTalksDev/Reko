@@ -236,14 +236,15 @@ class Custom(commands.Cog):
     @slash_command(description="Setup Reko for your server!")
     @commands.has_permissions(administrator=True)
     async def setup(self, ctx):
-        embed=discord.Embed(title="Setup up Reko for your server! ", description="Please select the feature you would like to setup with the **select menu** and then hit the **green setup button** to set it up for your server!", color=color)
+        embed=discord.Embed(title="⚙️ Setup up Reko for your server! ", description="Please select the feature you would like to setup with the **select menu** and then hit the **green setup button** to set it up for your server!", color=color)
         embed.set_thumbnail(url="https://www.technotalks.net/static/main/images/Reko_Circular-removebg-preview.png")
         embed.set_author(name=f"Customizable features of Reko")
         
         for feature in features:
             embed.add_field(name="__"+feature["friendly_name"]+"__", value=feature["description"], inline=False)
         
-        embed.add_field(name="\u200B", value="Please report bugs in the [support server](https://discord.gg/8vNHAA36fR)! It really helps the bot grow!")
+        embed.add_field(name="📖 __Docs__", value="**Please read the docs** for [Server Panel](https://github.com/TechnoTalksDev/Reko/blob/main/docs/features/serverpanel.md) or [Reko Link](https://github.com/TechnoTalksDev/Reko/blob/main/docs/features/rekolink.md) carefully inorder to set them up correctly!\n", inline=False)
+        embed.add_field(name="\u200B", value="🪲 Please report bugs in the [support server](https://discord.gg/8vNHAA36fR)! It really helps the bot grow!")
         view=setupView(ctx)
         await ctx.respond(embed=embed, view=view)
     @setup.error
