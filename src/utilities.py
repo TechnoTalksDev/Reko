@@ -165,6 +165,7 @@ class webSocketHandler():
                             await message.edit(embed=unreach_embed, attachments=[])
                             break
                     """
+                    websocket.close()
                     self.sockets.remove([websocket, guild])
                     guild["latched"] = False
                     guild["ping"] = -1

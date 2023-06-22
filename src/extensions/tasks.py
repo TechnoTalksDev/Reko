@@ -179,6 +179,7 @@ class tasksCog(commands.Cog):
                     async with websockets.connect(f"ws://{ip}:{port}/", extra_headers = {"token": token}) as websocket:
                         utilities.websockets_list.append({"guild_id": guild_id, "ip": ip, "port": port, "token":token, "channel": channel, "latched": False, "ping": -1})
             except Exception as error:
+                websocket.close()
                 logger.info(f"[Socket] Failed to create websocket for {ip}:{port}")
             await srcbot.socketHandler.refreshConnections()
             #logger.warning(utilities.websockets_list)
