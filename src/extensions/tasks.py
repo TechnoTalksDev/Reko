@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from colorama import Fore
 from mcstatus import JavaServer
 import matplotlib.pyplot as plt
+from bson import ObjectId
 
 #intialize error_logger & error_message
 coloredlogs.install(level="INFO", fmt="%(asctime)s %(name)s[%(process)d] %(levelname)s %(message)s")
@@ -300,18 +301,22 @@ class tasksCog(commands.Cog):
     @tasks.loop(minutes = 1)
     async def bot_stats(self):
         coll = botstats_coll
-        findguild= await coll.find_one({"_id": self.bot.application_id})
-        
-        if findguild:
-            await coll.delete_many(findguild)
-        users = 0
-        for guild in self.bot.guilds:
-            users += guild.member_count
-        
-        commands_run = srcbot.commands_run
+        if self.bot.application_id == 879790233099587595:
+            fid = ObjectId("649e1588abc43a3dd2ec0d02")
+            findguild = await coll.find_one({"_id": fid})
+            
+            if findguild:
+                await coll.delete_many(findguild)
+            users = 0
+            for guild in self.bot.guilds:
+                users += guild.member_count
+            
+            commands_run = srcbot.commands_run
 
-        logger.info(f"Uploading bot stats... guild_count: {len(self.bot.guilds)}, users: {users}, commands_run: {commands_run} ")
-        await coll.insert_one({"_id": self.bot.application_id, "guild_count": len(self.bot.guilds), "users": users, "commands_run": commands_run})
+            logger.info(f"Uploading bot stats... guild_count: {len(self.bot.guilds)}, users: {users}, commands_run: {commands_run} ")
+            await coll.insert_one({"_id": fid, "guild_count": len(self.bot.guilds), "users": users, "commands_run": commands_run})
+        else:
+            logger.info("Skipping uploading bot stats")
     
     @tick.before_loop
     async def before_tick(self):
