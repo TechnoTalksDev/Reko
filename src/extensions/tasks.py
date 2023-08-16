@@ -210,19 +210,23 @@ class tasksCog(commands.Cog):
                         unreach_embed = utilities.ErrorMessage.unreachable_server(ip)
                         unreach_embed.add_field(name="Updated:", value=f"<t:{int(time.time())}:R>", inline=True)
                         await message.edit(embed=unreach_embed, attachments=[])
-                        
                         break
                 continue
             
             try:
-                server = JavaServer.lookup(f"{ip}:{port}", 3)
+                if port == 25565:
+                    server = JavaServer.lookup(ip, 3)
+                    logger.warn(ip)
+                else:
+                    server = JavaServer.lookup(f"{ip}:{port}", 3)
                 status = await server.async_status()
-            except:
+            except Exception as e:
                 async for message in channel.history(limit=10):
                     if message.author == self.bot.user:
                         unreach_embed = utilities.ErrorMessage.unreachable_server(ip)
                         unreach_embed.add_field(name="Updated:", value=f"<t:{int(time.time())}:R>", inline=True)
                         await message.edit(embed=unreach_embed, attachments=[])
+                        
                         break
                 continue
 

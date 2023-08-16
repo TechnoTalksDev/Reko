@@ -28,6 +28,11 @@ token = os.getenv("TOKEN")
 #Run bot
 if __name__ == "__main__":
     try:
-        bot.run(token)
+        if token != None:
+            bot.run(token)
+        else:
+            logger.error("Failed to start bot")
+            logger.error("TOKEN env not found")
+            
     except:
         pass
