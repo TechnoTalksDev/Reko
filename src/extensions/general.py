@@ -29,8 +29,8 @@ def get_map(ip):
     coords = g.latlng
     logger.debug("Got coordinates succesfully") 
     #create map
-    tiles_url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
-    m = StaticMap(750, 750)
+    tiles_url="https://api.protomaps.com/tiles/v3/{z}/{x}/{y}.mvt?key=key"
+    m = StaticMap(750, 750, url_template=tiles_url)
     #create marker for location
     marker_outline = CircleMarker((coords[1], coords[0]), "white", 18)
     marker = CircleMarker((coords[1], coords[0]), "#6bf414", 12)
@@ -167,8 +167,11 @@ class General(commands.Cog):
         except:
             await ctx.respond(embed=utilities.ErrorMessage.unreachable_server(ip))
 
-        coords = map[0]
-        image = map[1]
+        try:
+            coords = map[0]
+            image = map[1]
+        except:
+            await ctx.respond(embed=utilities.ErrorMessage.default())
         #create embed
         embed=discord.Embed(title=f"Approximate location of {ip}", color=color)
         

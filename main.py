@@ -1,7 +1,7 @@
 import os, coloredlogs, logging, traceback
 from colorama import Fore
 
-#Setup logging so we know what the fuck is going on
+#Setup logging so we know what is going on
 coloredlogs.install(level="INFO", fmt="%(asctime)s %(name)s[%(process)d] %(levelname)s %(message)s")
 logger = logging.getLogger("Reko")
 file_handler = logging.FileHandler("SEVERE.log")

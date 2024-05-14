@@ -278,7 +278,7 @@ class Custom(commands.Cog):
                         query = [False]
                         pass
                 except:
-                    await ctx.respond(embed=utilities.unreachable_server(ip))
+                    await ctx.respond(embed=utilities.ErrorMessage.unreachable_server(ip))
                     return
         
                 embed = await utilities.StatusCore.default(ip, status, query)

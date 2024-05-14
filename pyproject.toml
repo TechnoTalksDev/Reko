@@ -4,6 +4,7 @@ version = "0.4.4-beta"
 description = "https://github.com/TechnoTalksDev/Reko"
 homepage = "https://reko.technotalks.net"
 authors = ["TechnoTalksDev <technotalksyt101@gmail.com>"]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10"
