@@ -216,7 +216,7 @@ class tasksCog(commands.Cog):
             try:
                 if port == 25565:
                     server = JavaServer.lookup(ip, 3)
-                    logger.warn(ip)
+                    #logger.warn(ip)
                 else:
                     server = JavaServer.lookup(f"{ip}:{port}", 3)
                 status = await server.async_status()
@@ -254,6 +254,8 @@ class tasksCog(commands.Cog):
             ax.plot(a, b, "#6bf414")
             ax.set_ylabel("Player Count")
             ax.set_xlabel("Last 10 minutes")
+            plt.yt
+            ax.set_ylim(bottom=0)
             buf = io.BytesIO()
 
             plt.savefig(buf, format="PNG")
