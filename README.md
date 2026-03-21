@@ -16,18 +16,16 @@
   <img src="https://img.shields.io/github/last-commit/technotalksdev/reko">
 </p>
 
-> I'm back!
-
 ## Key Features
-- Get **player count**, **online players** (To-Do), **server version**, and **motd**
-- Get **latency** to server (ping from bot to server)
+- Get **player count**, **online players**, **server version**, and **motd**
+- Get **latency** to server
 - Get the **approximate location**
 - Set a server for your **guild to track**
-- **Updating Chart** of player count and other info (To-Do)
+- **Updating Chart** of player count and other info
 - **Player stats** (Planned)
-- Track when **players join and leave** (To-Do)
+- Track when **players join and leave**
 - **@Online Players role** automatically assigned to online players on the server (To-Do)
-- _Hack Minecraft Servers_ (_This is a joke...I think_)
+- _Hack Minecraft Servers_ (_Not really_)
 ## To-Do list
 If you would like to **contribute**, or just want to see **upcoming features**, then take a look at the [To-do](https://github.com/users/TechnoTalksDev/projects/3) list!
 ## Website
@@ -36,7 +34,7 @@ If you would like to **contribute**, or just want to see **upcoming features**, 
 I request that if you want to test the main bot that you don't run a seperate instance of the bot and instead just [invite](https://reko.technotalks.net/) it. If your are developing or contributing to the bot then please go ahead!
 
 **Dependencies** and **enviroment variables**:
-1. Installing dependencies (Really quite simple because of... you guessed it! **_Poetry_**!)
+1. Installing dependencies
 	- You do need to **[install poetry](https://python-poetry.org/docs/#installation)** first!
 	- Then simply run `poetry install`!
 	- Poetry will then do all the work and install all the packages and their dependencies for you!
@@ -51,8 +49,8 @@ MONGO_LINK=localhost:27017
 ```
 
 ## Licence/Terms of use
-I present to you the **GNU Affero General Public License**! Please browse through the license for basic info. If you plan on publishing your forked version (with valid and extensive changes), please make sure to run it by me once (You can contact me through my [Discord Server](https://discord.gg/8vNHAA36fR)), I would love to see what you've done with the bot!.
-## Thanks
-Thanks for viewing the repo I will update the bot (and this readme) and make it better in the future! 
+**GNU Affero General Public License**
+Please browse through the license for basic info. If you plan on publishing your forked version (with valid and extensive changes), please make sure to run it by me once (You can contact me through my [Discord Server](https://discord.gg/8vNHAA36fR)), I would love to see what you've done with the bot!.
+
 
 PS: Go add the bot! Link on the [website](https://reko.technotalks.net/)!
